@@ -167,8 +167,18 @@
     touch-action: pan-y;
   }
   .card.dragging{ box-shadow: var(--shadow-lg); z-index: 5; }
-  .card.drag-over-before{ box-shadow: var(--shadow), inset 0 3px 0 var(--accent); }
-  .card.drag-over-after{ box-shadow: var(--shadow), inset 0 -3px 0 var(--accent); }
+  .drop-placeholder{
+    border: 2px dashed var(--accent);
+    border-radius: var(--radius);
+    box-sizing: border-box;
+    background: rgba(245,166,35,0.06);
+    opacity: 0;
+    transform: scaleY(0.7);
+    transform-origin: center;
+    transition: opacity 140ms ease, transform 140ms ease;
+    pointer-events: none;
+  }
+  .drop-placeholder.show{ opacity: 1; transform: scaleY(1); }
 
   .card-header{
     display:flex; align-items:center; gap:8px; margin-bottom:8px;
@@ -1212,26 +1222,65 @@
     var startX = e.clientX, startY = e.clientY;
     var pointerId = e.pointerId;
     var longPress = false;
-    var holdTimer = setTimeout(function(){
-      longPress = true;
-      card.classList.add("dragging");
-      try { card.setPointerCapture(pointerId); } catch(err){}
-    }, 260);
+    var placeholder = null;
+    var lastTargetId = null, lastAfter = null;
 
-    function currentTarget(clientX, clientY){
+    function enterMoveMode(){
+      longPress = true;
+      var cardHeight = card.getBoundingClientRect().height;
+      try { card.setPointerCapture(pointerId); } catch(err){}
+      /* Immediate "lift" feedback right as move mode begins, before any
+         finger movement, so it's clear the card has been picked up. */
+      card.classList.add("dragging");
+      card.style.transition = "transform 120ms ease";
+      card.style.transform = "scale(1.045)";
+      setTimeout(function(){ if (longPress) card.style.transition = "none"; }, 130);
+
+      placeholder = document.createElement("div");
+      placeholder.className = "drop-placeholder";
+      placeholder.style.height = cardHeight + "px";
+    }
+
+    var holdTimer = setTimeout(enterMoveMode, 260);
+
+    function findTargetCard(clientX, clientY){
       card.style.pointerEvents = "none";
       var el = document.elementFromPoint(clientX, clientY);
       card.style.pointerEvents = "";
-      return el && el.closest ? el.closest(".card") : null;
+      if (!el || !el.closest) return null;
+      var targetCard = el.closest(".card");
+      if (targetCard && targetCard !== card) return targetCard;
+      /* Also allow dropping in the empty space below the last card of
+         a column (e.g. a short right column next to a tall left one). */
+      var col = el.closest(".grid-col");
+      if (col){
+        var cards = col.querySelectorAll(".card");
+        var last = cards[cards.length - 1];
+        if (last && last !== card) return last;
+      }
+      return null;
+    }
+
+    function placePlaceholder(target, after){
+      if (lastTargetId === target.getAttribute("data-catid") && lastAfter === after) return;
+      lastTargetId = target.getAttribute("data-catid");
+      lastAfter = after;
+      var parent = target.parentElement;
+      if (after){
+        parent.insertBefore(placeholder, target.nextSibling);
+      } else {
+        parent.insertBefore(placeholder, target);
+      }
+      placeholder.classList.remove("show");
+      requestAnimationFrame(function(){ placeholder.classList.add("show"); });
+    }
+
+    function removePlaceholder(){
+      if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
+      lastTargetId = null; lastAfter = null;
     }
 
     var dropInfo = null; /* { targetId, after } — where the card will be inserted */
-
-    function clearDragOverMarks(){
-      document.querySelectorAll(".card.drag-over-before, .card.drag-over-after").forEach(function(c){
-        c.classList.remove("drag-over-before", "drag-over-after");
-      });
-    }
 
     function onMove(ev){
       if (ev.pointerId !== pointerId) return;
@@ -1242,15 +1291,15 @@
       }
       ev.preventDefault();
       card.style.transition = "none";
-      card.style.transform = "translate(" + dx + "px," + dy + "px) scale(1.03)";
-      clearDragOverMarks();
-      var target = currentTarget(ev.clientX, ev.clientY);
-      if (target && target !== card){
+      card.style.transform = "translate(" + dx + "px," + dy + "px) scale(1.045)";
+      var target = findTargetCard(ev.clientX, ev.clientY);
+      if (target){
         var rect = target.getBoundingClientRect();
         var after = (ev.clientY - rect.top) > (rect.height / 2);
-        target.classList.add(after ? "drag-over-after" : "drag-over-before");
+        placePlaceholder(target, after);
         dropInfo = { targetId: target.getAttribute("data-catid"), after: after };
       } else {
+        removePlaceholder();
         dropInfo = null;
       }
     }
@@ -1260,7 +1309,7 @@
       clearTimeout(holdTimer);
       cleanup();
       if (!longPress) return;
-      clearDragOverMarks();
+      removePlaceholder();
       card.classList.remove("dragging");
       card.style.transition = "transform 150ms ease";
       card.style.transform = "";
