@@ -157,7 +157,7 @@
     background: var(--card-bg);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    padding: 12px 12px;
+    padding: 12px 12px 8px 12px;
     user-select: none;
     transition: box-shadow .15s ease;
     position: relative;
@@ -219,6 +219,7 @@
     transition: opacity 150ms ease;
   }
   .ctodo-row:active{ opacity:0.55; }
+  .ctodo-row:last-child{ padding-bottom:0; }
   .ccheck{
     width:6px; height:6px; border-radius:50%; background:#C6C6CC;
     flex-shrink:0; margin-top:8px;
@@ -238,7 +239,7 @@
     display:flex; align-items:center; justify-content:center;
   }
   .ctodo-del:active{ background: rgba(0,0,0,0.06); }
-  .card-addzone{ margin-top:2px; min-height:4px; }
+  .card-addzone{ margin-top:0; min-height:0; }
   .card-addzone.active{
     margin-top:6px; padding:8px; background:#F8F8FA; border-radius:12px;
   }
