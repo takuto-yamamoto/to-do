@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="To Do">
+<meta name="theme-color" content="#F1F1F5">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAACpklEQVR4nO2WT0gUcRTHv+83M7uz2K7uWmH2B4T8U0h0qkNIlpeCiHDpUB3tEF6iS0FJdSiif9BFxEOXoi6BpASRXUrCunRQSClICVIS1nZ1rd3Znd/vdXBMyZnZsfAg9PhdBt57n997v/e+DDEzVtPEqmb/DwhiegAf/ymgfwCwAlGJFMwAgzw74Q1gJ4yLeZ/8ZJgAgRnkfg8PADOIrLHB7Jv7MjsFkFujCMx6fEu0uT20eZcXg1wWjRVIWGNvvz85F97eFK7ZSyCXYGZmlf/0qjAxXHmyK1TdOB8YBMAgpB60ibLKRPK2e4lLbPrRGQit8kSnaxHLH4dBxEVLzn4za5vADLsAJZcdGwBbcwAijYfs1DjbeZBLJ71enwFypkhofx4AQs8OdKcengYzSAMRPDQtwKKxAqvFTyUhtJ9DfdmBLqNqB4igpE90AIBmgITDUBJCs8YGM8+vmw0t5YcvLpT7dwASAKd7O3Ij/SDBsgihFac+pp92GFUNFUeukNABeG1ASQCDAYacmUz3XsqNviTNkDOT6Z4LZJYljt0QZoyV7Xc/AL5SQWAJosTxe+me85m+y1zM5z68kD+m15/q1iqqoSR5K0SQCpzaRSQWb70V2ro78+xqYWI4fvSasWnn/GOUzO4PcDrLsigisXjrTbP+QHnLWbNuf/Ds8GwR0e+9J2YoW5ixRPIOAFY2YWE0lQQJkObsTbAKCMykm3piW26kHwD0EMTiPUjoixunh0BkfR7UohvJCINdMJ5iV/g6NP24PVyzx6w/SCQ8xI6t8Xe50f5E8q5Z2xRY7ODIdeHL+9nXnXZmkjwmnZm16Ibovjazrnklcr2EAUBZc+4OAAARXrfUeSUAwLXklbr5Apx4XwdfnUCgv4pSKfxt7f94rX3AL3TqK20ciYLeAAAAAElFTkSuQmCC">
+<link rel="icon" type="image/png" sizes="16x16" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABSUlEQVR4nJVSLU8DQRB9s3fXu6uAFDxNSoLAIMAUg0SS0N9TT4IFyx9ANSFBEkxDIBiCQjQ1kGCOpe19sewOoun19q6GlzU7+97szJshZsZ/4NYidT2VL8ImG4Cqh42lrpRk0gmrFEQAwEyNUARrq0piAxLJy00+fhRhwWCTzYLtw3D3eE6YZ2Fmw8w6/ooGfaNyLkEnMhr0dSIL2rIHVplotshtAIBWACZ3F/n4yd1scz5b1TSBHFd9vmn5AceLn6/193uwc2QSCbE007ZVOCabTO8v/U43Hz20Ts/I8SoulQQMVqnfPoBW0+HVRu+c3AAAHA8lJ5cCaoQmkfyb+52u3+kubNYmjsgLanNgAxLp6202GopwffEoTCr9rf3m3klha31wkn8SQIAAZvIC0WyVCbagmE4ZdrD6A8DW+hEqy1ffVrIJVfwBou6zdq6LZV8AAAAASUVORK5CYII=">
+<title>To Do リスト</title>
+<style>
+  :root{
+    --bg: #F1F1F5;
+    --card-bg: #FFFFFF;
+    --text-main: #1C1C1E;
+    --text-sub: #8E8E93;
+    --line: #E9E9EE;
+    --accent: #F5A623;
+    --shadow: 0 2px 10px rgba(0,0,0,0.05);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+    --radius: 18px;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  button, .icon-btn, .card, .ccheck, .drow, .dcheck, .mini-add, .mini-cancel, .drawer-item, .swatch, .modal-btn, .fab{
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  html,body{
+    margin:0; padding:0; height:100%;
+    background: var(--bg);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  #app{ min-height:100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: calc(18px + env(safe-area-inset-top)) 20px 8px 20px;
+  }
+  .icon-btn{
+    width:40px; height:40px; display:flex; align-items:center; justify-content:center;
+    border:none; background:transparent; cursor:pointer; color:var(--text-main);
+    border-radius: 10px; position:relative;
+  }
+  .icon-btn:active{ background: rgba(0,0,0,0.05); }
+  .icon-btn svg{ width:22px; height:22px; }
+  .page-title{
+    font-size: 15px; font-weight:600; color: var(--text-sub);
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- Side drawer ---------- */
+  .drawer-backdrop{
+    position:fixed; inset:0; background: rgba(0,0,0,0.32); z-index: 40;
+    opacity:0; transition: opacity .25s ease; pointer-events:none;
+  }
+  .drawer-backdrop.open{ opacity:1; pointer-events:auto; }
+  .side-drawer{
+    position:fixed; top:0; left:0; bottom:0; width:78%; max-width:290px;
+    background: var(--card-bg); z-index: 41; box-shadow: var(--shadow-lg);
+    transform: translateX(-100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+    padding: calc(26px + env(safe-area-inset-top)) 14px calc(26px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .side-drawer.open{ transform: translateX(0); }
+  .drawer-title{
+    font-size:13px; font-weight:700; color:var(--text-sub); letter-spacing:0.04em;
+    padding: 0 10px 16px 10px;
+  }
+  .drawer-item{
+    display:flex; align-items:center; gap:14px; padding:13px 12px; border-radius:12px;
+    font-size:15.5px; font-weight:500; color:var(--text-main); cursor:pointer;
+  }
+  .drawer-item:active{ background:#F1F1F5; }
+  .drawer-item.active{ background:#FBEBD2; color:#8A5A12; }
+  .drawer-item svg{ width:20px; height:20px; color:var(--text-sub); flex-shrink:0; }
+  .drawer-item.active svg{ color:#C98A1E; }
+
+  /* ---------- Log page rows ---------- */
+  .log-row{ cursor:default; }
+  .log-meta{ display:flex; align-items:center; gap:6px; margin-top:3px; }
+  .log-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .log-cat{ font-size:11.5px; color:var(--text-sub); }
+  .log-date{ font-size:11.5px; color:#C6C6CB; margin-left:auto; padding-right:4px; }
+  .log-empty{ padding: 60px 20px; color:#C6C6CB; text-align:center; font-size:14px; }
+
+  /* ---------- Settings page ---------- */
+  .settings-group{
+    margin: 10px 14px; background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow:hidden;
+  }
+  .settings-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 16px; border-bottom:1px solid var(--line); font-size:15px;
+  }
+  .settings-row:last-child{ border-bottom:none; }
+  .settings-row-label{ color:var(--text-main); }
+  .settings-row-value{ color:var(--text-sub); font-size:13.5px; }
+  .settings-danger{ color:#E0507A; cursor:pointer; font-weight:600; }
+  .settings-danger:active{ opacity:0.6; }
+  .settings-section-label{
+    font-size:12.5px; font-weight:700; color:var(--text-sub); letter-spacing:0.03em;
+    margin: 18px 14px 6px 20px;
+  }
+
+  /* ---------- Main grid (masonry: 2 independent columns, shortest gets next card) ---------- */
+  .grid{
+    display:flex;
+    align-items:flex-start;
+    gap: 14px;
+    padding: 6px 14px 20px 14px;
+  }
+  .grid-col{
+    display:flex;
+    flex-direction:column;
+    gap: 14px;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  @media (max-width: 480px){
+    .grid{ gap: 10px; padding: 6px 10px 20px 10px; }
+    .grid-col{ gap: 10px; }
+  }
+  @media (max-width: 340px){
+    .grid{ flex-direction:column; }
+  }
+
+  .card{
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px 14px;
+    user-select: none;
+    transition: box-shadow .15s ease;
+    position: relative;
+    display:flex; flex-direction:column;
+    min-height: 90px;
+    min-width: 0;
+    touch-action: pan-y;
+  }
+  .card.dragging{ box-shadow: var(--shadow-lg); z-index: 5; }
+  .card.drag-over-before{ box-shadow: var(--shadow), inset 0 3px 0 var(--accent); }
+  .card.drag-over-after{ box-shadow: var(--shadow), inset 0 -3px 0 var(--accent); }
+
+  .card-header{
+    display:flex; align-items:center; gap:9px; margin-bottom:12px;
+    padding-bottom:11px; border-bottom:1px solid var(--line);
+  }
+  .dot{
+    width:11px; height:11px; border-radius:50%; flex-shrink:0;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.035);
+  }
+  .card-title{
+    font-size:16.5px; font-weight:700; color:var(--text-main);
+    letter-spacing:0.01em;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .card-del{
+    margin-left:auto; width:22px; height:22px; border:none; background:transparent;
+    color: var(--text-sub); font-size:16px; cursor:pointer; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .card-del:active{ background: rgba(0,0,0,0.06); }
+
+  .todo-row{
+    display:flex; align-items:center; gap:9px; padding:6px 0;
+    font-size: 14.5px; color: var(--text-sub);
+    min-width: 0;
+  }
+  .todo-row.done{ text-decoration: line-through; color:#C6C6CB; }
+  .check{
+    width:17px; height:17px; border-radius:50%; border:1.6px solid #D6D6DC;
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  }
+  .check.on{ background:#B9BFC8; border-color:#B9BFC8; }
+  .check.on svg{ width:11px; height:11px; }
+  .todo-text{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .todo-due{
+    margin-left:auto; font-size:11.5px; color:#C0A15A; flex-shrink:0; padding-left:6px;
+  }
+  .more-tasks{
+    color:#C6C6CB; font-size:13.5px; margin-top:4px; padding:4px 0 0 26px;
+  }
+  .empty-hint{
+    color:#D2D2D7; font-size:13px; padding: 2px 0 0 2px;
+  }
+  .ctodo-row{
+    display:flex; align-items:flex-start; gap:8px; padding:5px 0;
+    font-size:14px; color:var(--text-main);
+    cursor:pointer; user-select:none; -webkit-user-select:none;
+    transition: opacity 150ms ease;
+  }
+  .ctodo-row:active{ opacity:0.55; }
+  .ccheck{
+    width:6px; height:6px; border-radius:50%; background:#C6C6CC;
+    flex-shrink:0; margin-top:8px;
+  }
+  .ctodo-text{
+    flex:1; min-width:0; white-space:normal; overflow-wrap:break-word; word-break:break-word;
+    line-height:1.4;
+  }
+  .ctodo-due{
+    font-size:10.5px; font-weight:600; color:#B08324; flex-shrink:0;
+    background:#FBF0DA; border-radius:6px; padding:2.5px 6px; margin-top:0.5px;
+  }
+  .ctodo-due.overdue{ color:#C22B4E; background:#FBE1E7; }
+  .ctodo-del{
+    width:20px; height:20px; border:none; background:transparent; color:#D2D2D7;
+    font-size:15px; cursor:pointer; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ctodo-del:active{ background: rgba(0,0,0,0.06); }
+  .card-addzone{ margin-top:4px; min-height:4px; }
+  .card-addzone.active{
+    margin-top:8px; padding:10px; background:#F8F8FA; border-radius:12px;
+  }
+  .mini-input{
+    width:100%; border:none; outline:none; font-size:13.5px; padding:6px 2px;
+    border-bottom:1px solid var(--line); background:transparent; color:var(--text-main);
+    font-family:inherit;
+  }
+  .mini-row2{ display:flex; align-items:center; gap:6px; margin-top:6px; min-width:0; }
+  .mini-date{
+    flex:1; min-width:0; max-width:100%; border:none; outline:none; background:#FFFFFF; border-radius:8px;
+    padding:7px 8px; font-size:12px; color:var(--text-main); font-family:inherit;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .mini-row3{ display:flex; align-items:center; gap:6px; margin-top:6px; min-width:0; }
+  .mini-add{
+    border:none; background: var(--accent); color:white; font-weight:600;
+    padding:6px 12px; border-radius:8px; font-size:12.5px; cursor:pointer; flex:1;
+    font-family:inherit; min-width:0;
+  }
+  .mini-cancel{
+    border:none; background:transparent; color:var(--text-sub); width:22px; height:22px;
+    font-size:15px; cursor:pointer; border-radius:50%; flex-shrink:0;
+  }
+  .mini-cancel:active{ background: rgba(0,0,0,0.06); }
+  .card.drop-target{
+    outline: 2px dashed var(--accent); outline-offset: 2px; background:#FFF8EC;
+  }
+  .fab.fab-dragging{
+    box-shadow: 0 14px 32px rgba(0,0,0,0.28); z-index: 60; cursor: grabbing;
+  }
+
+  /* ---------- Floating add button ---------- */
+  .fab{
+    position:fixed; right:20px; bottom: calc(26px + env(safe-area-inset-bottom));
+    width:58px; height:58px; border-radius:50%;
+    background: linear-gradient(155deg, #FFC15C, var(--accent) 65%);
+    box-shadow: var(--shadow-lg);
+    border:none; color:white; font-size:28px; font-weight:400;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; z-index: 30;
+    touch-action: none;
+  }
+  .fab:active{ transform: scale(0.94); }
+
+  /* ---------- Detail page ---------- */
+  .detail{
+    position: fixed; inset:0; background: var(--bg);
+    transform: translateX(100%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+    z-index: 20; overflow-y:auto;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  }
+  .detail.open{ transform: translateX(0); }
+  .detail-top{
+    display:flex; align-items:center; gap:6px;
+    padding: calc(16px + env(safe-area-inset-top)) 12px 6px 6px;
+  }
+  .detail-title-wrap{ display:flex; align-items:center; gap:8px; overflow:hidden; }
+  .detail-title{
+    font-size:19px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .detail-dot{ width:13px; height:13px; border-radius:50%; flex-shrink:0; }
+
+  .detail-list{
+    background: var(--card-bg);
+    margin: 10px 14px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  .drow{
+    display:flex; align-items:center; gap:10px;
+    padding: 13px 14px; border-bottom: 1px solid var(--line);
+    cursor:grab;
+  }
+  .drow:last-child{ border-bottom:none; }
+  .drow.dragging{ opacity:.35; }
+  .drow.drag-over{ box-shadow: inset 0 2px 0 var(--accent); }
+  .dcheck{
+    width:22px; height:22px; border-radius:50%; border:1.8px solid #D6D6DC;
+    flex-shrink:0; display:flex; align-items:center; justify-content:center; cursor:pointer;
+    background: white;
+    transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+  }
+  .dcheck:active{ transform: scale(0.85); }
+  .dcheck.restore{ background:#EAF2FF; border-color:#BEDBFF; color:#2F7DE0; }
+  .dcheck.restore svg{ width:14px; height:14px; }
+  .log-hint{
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    padding: 0 20px 10px 20px; font-size:12px; color:var(--text-sub);
+  }
+  .log-hint span{ display:inline-flex; align-items:center; gap:5px; }
+  .log-hint .hint-swatch{
+    width:18px; height:18px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .log-hint .hint-restore{ background:#EAF2FF; color:#2F7DE0; }
+  .log-hint .hint-delete{ background:#FCEAEF; color:#E0507A; }
+  .log-hint svg{ width:11px; height:11px; }
+  .dtext-wrap{ flex:1; min-width:0; }
+  .dtitle{ font-size:15.5px; color:var(--text-main); word-break: break-word; transition: color 150ms ease; }
+  .drow.done .dtitle{ text-decoration: line-through; color:#C6C6CB; }
+  .ddue{ font-size:12px; color:#C0A15A; margin-top:2px; transition: color 150ms ease; }
+  .drow.done .ddue{ color:#D6D6DC; }
+  .drow.overdue .ddue{ color:#E0507A; }
+  .drow{ will-change: transform; }
+  .drag-handle{
+    color:#D6D6DC; font-size:18px; flex-shrink:0; padding:0 2px; cursor:grab; letter-spacing:2px;
+  }
+  .drow-del{
+    border:none; background:transparent; color:#D6D6DC; font-size:18px; cursor:pointer;
+    width:26px; height:26px; flex-shrink:0; border-radius:50%;
+  }
+  .drow-del:active{ background: rgba(0,0,0,0.05); }
+  .log-del{ color:#E0507A; }
+  .log-del svg{ width:16px; height:16px; }
+  .detail-empty{ padding: 30px 20px; color:#C6C6CB; text-align:center; font-size:14px; }
+
+  /* ---------- Add todo form ---------- */
+  .add-form{
+    margin: 16px 14px; background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 14px;
+  }
+  .add-form input[type=text]{
+    width:100%; border:none; outline:none; font-size:15.5px; padding:10px 4px;
+    border-bottom: 1px solid var(--line); color:var(--text-main); background:transparent;
+    font-family:inherit;
+  }
+  .add-row2{ display:flex; align-items:center; gap:10px; margin-top:10px; }
+  .add-row2 input[type=date]{
+    flex:1; border:none; outline:none; background:#F6F6F8; border-radius:10px;
+    padding:9px 10px; font-size:14px; color:var(--text-main); font-family:inherit;
+  }
+  .add-submit{
+    border:none; background: var(--accent); color:white; font-weight:600;
+    padding:9px 18px; border-radius:10px; font-size:14px; cursor:pointer; flex-shrink:0;
+  }
+  .add-submit:disabled{ background:#EAD7B0; cursor:default; }
+
+  /* ---------- Modal (new category) ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; background: rgba(0,0,0,0.35);
+    display:flex; align-items:center; justify-content:center; z-index:50;
+    padding: 20px;
+  }
+  .modal{
+    background:white; border-radius:20px; padding:22px; width:100%; max-width:340px;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal h3{ margin:0 0 14px 0; font-size:17px; }
+  .modal input[type=text]{
+    width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line);
+    font-size:15px; outline:none; font-family:inherit; margin-bottom:14px;
+  }
+  .swatches{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+  .swatch{
+    width:30px; height:30px; border-radius:50%; cursor:pointer; border:3px solid transparent;
+  }
+  .swatch.sel{ border-color:#1C1C1E; }
+  .modal-actions{ display:flex; gap:10px; justify-content:flex-end; }
+  .modal-btn{
+    border:none; padding:9px 16px; border-radius:10px; font-size:14px; cursor:pointer; font-weight:600;
+    font-family:inherit;
+  }
+  .modal-btn.cancel{ background:#F1F1F5; color:var(--text-sub); }
+  .modal-btn.ok{ background: var(--accent); color:white; }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<button class="fab" id="fabAdd" title="新しいリストを追加">＋</button>
+
+<script>
+(function(){
+  "use strict";
+
+  var COLORS = ["#F5D949","#F0A020","#6C6FC4","#2FAE8E","#EB5A73","#B9BFC8","#5AC8E0","#9B7EDE"];
+  var THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+  var STORAGE_KEY = "todo-app-state-v1";
+
+  var state = null;
+  var view = { mode: "main", categoryId: null };
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+  function seedState(){
+    /* No personal data baked in — first-time users simply start empty
+       and create their own lists. */
+    return { categories: [], todos: [] };
+  }
+
+  function loadState(cb){
+    if (window.storage && typeof window.storage.get === "function") {
+      window.storage.get(STORAGE_KEY, false).then(function(res){
+        if (res && res.value) {
+          try { cb(JSON.parse(res.value)); return; } catch(e){}
+        }
+        cb(loadFromLocalStorage());
+      }).catch(function(){ cb(loadFromLocalStorage()); });
+    } else {
+      cb(loadFromLocalStorage());
+    }
+  }
+
+  function loadFromLocalStorage(){
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch(e){}
+    return seedState();
+  }
+
+  function saveState(){
+    if (window.storage && typeof window.storage.set === "function") {
+      try {
+        window.storage.set(STORAGE_KEY, JSON.stringify(state), false).catch(function(){});
+      } catch(e){}
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(e){}
+  }
+
+  function cleanupOldCompleted(){
+    var now = Date.now();
+    var before = state.todos.length;
+    state.todos = state.todos.filter(function(t){
+      if (t.completed && t.completedAt && (now - t.completedAt) > THIRTY_DAYS_MS) return false;
+      return true;
+    });
+    return state.todos.length !== before;
+  }
+
+  function sortTodos(list){
+    var arr = list.slice();
+    arr.sort(function(a,b){
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      if (!a.completed){
+        var ad = a.dueDate ? a.dueDate : null;
+        var bd = b.dueDate ? b.dueDate : null;
+        if (ad && bd){
+          if (ad !== bd) return ad < bd ? -1 : 1;
+          return (a.order||0) - (b.order||0);
+        }
+        if (ad && !bd) return -1;
+        if (!ad && bd) return 1;
+        return (a.order||0) - (b.order||0);
+      } else {
+        return (b.completedAt||0) - (a.completedAt||0);
+      }
+    });
+    return arr;
+  }
+
+  function todosByCategory(catId){
+    return state.todos.filter(function(t){ return t.categoryId === catId; });
+  }
+
+  function fmtDue(d){
+    if (!d) return "";
+    var parts = d.split("-");
+    if (parts.length !== 3) return d;
+    return parseInt(parts[1],10) + "/" + parseInt(parts[2],10);
+  }
+
+  function isOverdue(d){
+    if (!d) return false;
+    var today = new Date(); today.setHours(0,0,0,0);
+    var due = new Date(d + "T00:00:00");
+    return due < today;
+  }
+
+  var restoreSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>';
+  var trashSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
+
+  function esc(s){
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  /* ---------------- render main ---------------- */
+  var addModeCats = {}; /* catId -> true while its inline "add task" form is open */
+
+  function buildCardHtml(cat){
+    var todos = sortTodos(todosByCategory(cat.id).filter(function(t){ return !t.completed; }));
+    var html = '';
+    html += '<div class="card" data-catid="'+cat.id+'">';
+    html += '  <div class="card-header">';
+    html += '    <span class="dot" style="background:'+cat.color+'"></span>';
+    html += '    <span class="card-title">'+esc(cat.title)+'</span>';
+    html += '  </div>';
+    html += '  <div class="card-todolist" id="todolist-'+cat.id+'">';
+    if (todos.length === 0){
+      html += '<div class="empty-hint">タスクなし</div>';
+    } else {
+      todos.forEach(function(t){
+        html += '<div class="ctodo-row" data-id="'+t.id+'">';
+        html += '  <span class="ccheck" data-check="'+t.id+'" style="background:'+cat.color+'"></span>';
+        html += '  <span class="ctodo-text">'+esc(t.title)+'</span>';
+        if (t.dueDate) html += '<span class="ctodo-due'+(isOverdue(t.dueDate) ? ' overdue' : '')+'">'+fmtDue(t.dueDate)+'</span>';
+        html += '</div>';
+      });
+    }
+    html += '  </div>';
+    html += '  <div class="card-addzone'+(addModeCats[cat.id] ? ' active' : '')+'">';
+    if (addModeCats[cat.id]){
+      html += '    <input type="text" class="mini-input" id="miniTitle-'+cat.id+'" placeholder="タスクを入力" maxlength="60">';
+      html += '    <div class="mini-row2">';
+      html += '      <input type="date" class="mini-date" id="miniDate-'+cat.id+'">';
+      html += '    </div>';
+      html += '    <div class="mini-row3">';
+      html += '      <button class="mini-add" id="miniAddBtn-'+cat.id+'">追加</button>';
+      html += '      <button class="mini-cancel" id="miniCancelBtn-'+cat.id+'" aria-label="cancel">×</button>';
+      html += '    </div>';
+    }
+    html += '  </div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderMain(animate){
+    var app = document.getElementById("app");
+    var cats = state.categories.slice().sort(function(a,b){ return a.order - b.order; });
+
+    var oldRects = {};
+    if (animate){
+      document.querySelectorAll("#grid .card").forEach(function(c){
+        oldRects[c.getAttribute("data-catid")] = c.getBoundingClientRect();
+      });
+    }
+
+    var html = '';
+    html += '<div class="topbar">';
+    html += '<button class="icon-btn" id="menuBtn" aria-label="menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>';
+    html += '<span class="page-title">To Do</span>';
+    html += '<span style="width:40px"></span>';
+    html += '</div>';
+
+    html += '<div class="grid" id="grid">';
+    html += '  <div class="grid-col" id="gridColL"></div>';
+    html += '  <div class="grid-col" id="gridColR"></div>';
+    html += '</div>';
+
+    app.innerHTML = html;
+    document.getElementById("menuBtn").onclick = openDrawer;
+
+    /* Masonry placement: put each card into whichever column is
+       currently shorter, so short/tall cards pack tightly without
+       leaving a big gap under a short neighbor. */
+    var colL = document.getElementById("gridColL");
+    var colR = document.getElementById("gridColR");
+    var heightL = 0, heightR = 0;
+    cats.forEach(function(cat){
+      var temp = document.createElement("div");
+      temp.innerHTML = buildCardHtml(cat);
+      var cardEl = temp.firstElementChild;
+      if (heightL <= heightR){
+        colL.appendChild(cardEl);
+      } else {
+        colR.appendChild(cardEl);
+      }
+      var h = cardEl.offsetHeight;
+      if (cardEl.parentElement === colL) heightL += h; else heightR += h;
+      attachCardEvents(cardEl, cardEl.getAttribute("data-catid"));
+    });
+
+    if (animate){
+      document.querySelectorAll("#grid .card").forEach(function(c){
+        var id = c.getAttribute("data-catid");
+        var old = oldRects[id];
+        if (!old) return;
+        var nr = c.getBoundingClientRect();
+        var dx = old.left - nr.left, dy = old.top - nr.top;
+        if (Math.abs(dx) > 1 || Math.abs(dy) > 1){
+          c.style.transition = "none";
+          c.style.transform = "translate(" + dx + "px," + dy + "px)";
+          requestAnimationFrame(function(){
+            c.style.transition = "transform 220ms cubic-bezier(.4,0,.2,1)";
+            c.style.transform = "";
+            setTimeout(function(){ c.style.transition = ""; }, 230);
+          });
+        }
+      });
+    }
+  }
+
+  /* Re-renders a single card in place (used after check/add/delete)
+     so the rest of the grid stays untouched and no navigation happens. */
+  function renderCard(catId){
+    var card = document.querySelector('.card[data-catid="'+catId+'"]');
+    var cat = state.categories.find(function(c){ return c.id === catId; });
+    if (!card || !cat) return;
+    var temp = document.createElement("div");
+    temp.innerHTML = buildCardHtml(cat);
+    var newCard = temp.firstElementChild;
+    card.replaceWith(newCard);
+    attachCardEvents(newCard, catId);
+    if (addModeCats[catId]){
+      var inp = document.getElementById("miniTitle-"+catId);
+      if (inp) inp.focus();
+    }
+  }
+
+  function attachCardEvents(card, catId){
+    card.addEventListener("pointerdown", function(e){
+      if (e.target.closest("button, input, [data-check]")) return;
+      startCardDrag(e, card, catId);
+    });
+
+    card.querySelectorAll(".ctodo-row").forEach(function(row){
+      var lastTap = 0;
+      row.addEventListener("pointerup", function(e){
+        if (e.target.closest("button")) return;
+        var now = Date.now();
+        if (now - lastTap < 350){
+          lastTap = 0;
+          completeTodoInline(row.getAttribute("data-id"));
+        } else {
+          lastTap = now;
+        }
+      });
+    });
+    var submitted = false; /* guards against double-submit when blur (from picking
+      a date) and the "追加" button click fire for the same interaction */
+    function trySubmit(){
+      if (submitted) return;
+      submitted = true;
+      submitInlineAdd(catId);
+    }
+    var miniAddBtn = card.querySelector("#miniAddBtn-"+catId);
+    if (miniAddBtn){
+      miniAddBtn.onclick = function(){ trySubmit(); };
+    }
+    var miniCancelBtn = card.querySelector("#miniCancelBtn-"+catId);
+    if (miniCancelBtn){
+      miniCancelBtn.onclick = function(){
+        delete addModeCats[catId];
+        renderCard(catId);
+      };
+    }
+    var miniTitle = card.querySelector("#miniTitle-"+catId);
+    if (miniTitle){
+      miniTitle.addEventListener("keydown", function(e){
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        if (!miniTitle.value.trim()) return;
+        var dateInput = card.querySelector("#miniDate-"+catId);
+        if (dateInput){
+          dateInput.focus();
+          if (typeof dateInput.showPicker === "function"){
+            try { dateInput.showPicker(); } catch(err){}
+          }
+        } else {
+          trySubmit();
+        }
+      });
+    }
+    var miniDate = card.querySelector("#miniDate-"+catId);
+    if (miniDate){
+      var dateEdited = false;
+      miniDate.addEventListener("keydown", function(e){
+        if (e.key === "Enter"){
+          e.preventDefault();
+          trySubmit();
+        }
+      });
+      /* Mobile date pickers (notably iOS) can fire multiple "change"
+         events while the user is still scrolling the day/month/year
+         wheels, each with a partial/intermediate value. Submitting on
+         every "change" caused the very first, still-mid-scroll value
+         (close to today's date) to be saved before the user finished
+         picking. Instead, just remember that a value was picked and
+         submit once the field is actually confirmed (blur = picker
+         closed / user moved on), so the final chosen date is used.
+         trySubmit() also guards against this firing a second time if
+         the blur was itself caused by tapping the "追加" button. */
+      miniDate.addEventListener("change", function(){
+        dateEdited = true;
+      });
+      miniDate.addEventListener("blur", function(){
+        if (dateEdited && miniDate.value){
+          dateEdited = false;
+          trySubmit();
+        }
+      });
+    }
+  }
+
+  function completeTodoInline(id){
+    var t = state.todos.find(function(x){ return x.id === id; });
+    if (!t) return;
+    var catId = t.categoryId;
+    var row = document.querySelector('.ctodo-row[data-id="'+id+'"]');
+    function apply(){
+      t.completed = true;
+      t.completedAt = Date.now();
+      saveState();
+      renderCard(catId);
+    }
+    if (row){
+      row.style.transition = "opacity 150ms ease, transform 150ms ease";
+      row.style.opacity = "0";
+      row.style.transform = "translateX(14px)";
+      setTimeout(apply, 150);
+    } else {
+      apply();
+    }
+  }
+
+  function deleteTodoInline(id){
+    var t = state.todos.find(function(x){ return x.id === id; });
+    if (!t) return;
+    var catId = t.categoryId;
+    var row = document.querySelector('.ctodo-row[data-id="'+id+'"]');
+    function apply(){
+      state.todos = state.todos.filter(function(x){ return x.id !== id; });
+      saveState();
+      renderCard(catId);
+    }
+    if (row){
+      row.style.transition = "opacity 150ms ease, transform 150ms ease";
+      row.style.opacity = "0";
+      row.style.transform = "translateX(14px)";
+      setTimeout(apply, 150);
+    } else {
+      apply();
+    }
+  }
+
+  function submitInlineAdd(catId){
+    var titleInput = document.getElementById("miniTitle-"+catId);
+    var dateInput = document.getElementById("miniDate-"+catId);
+    var title = titleInput.value.trim();
+    if (!title){ titleInput.focus(); return; }
+    var maxOrder = state.todos.filter(function(t){ return t.categoryId === catId; })
+      .reduce(function(m,t){ return Math.max(m, t.order||0); }, -1);
+    state.todos.push({
+      id: uid(), categoryId: catId, title: title, dueDate: dateInput.value || "",
+      completed: false, completedAt: null, order: maxOrder + 1
+    });
+    saveState();
+    renderCard(catId);
+  }
+
+  /* ---------------- side drawer (navigation) ---------------- */
+  var homeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>';
+  var logIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+  var settingsIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+
+  function currentPageKey(){
+    if (document.getElementById("logPage")) return "log";
+    if (document.getElementById("settingsPage")) return "settings";
+    return "home";
+  }
+
+  function openDrawer(){
+    if (document.getElementById("sideDrawer")) return;
+    var active = currentPageKey();
+
+    var backdrop = document.createElement("div");
+    backdrop.className = "drawer-backdrop";
+    backdrop.id = "drawerBackdrop";
+    backdrop.onclick = closeDrawer;
+    document.body.appendChild(backdrop);
+
+    var drawer = document.createElement("div");
+    drawer.className = "side-drawer";
+    drawer.id = "sideDrawer";
+    drawer.innerHTML =
+      '<div class="drawer-title">メニュー</div>'+
+      '<div class="drawer-item'+(active==="home"?' active':'')+'" id="navHome">'+homeIcon+'<span>ホーム</span></div>'+
+      '<div class="drawer-item'+(active==="log"?' active':'')+'" id="navLog">'+logIcon+'<span>ログ</span></div>'+
+      '<div class="drawer-item'+(active==="settings"?' active':'')+'" id="navSettings">'+settingsIcon+'<span>設定</span></div>';
+    document.body.appendChild(drawer);
+
+    requestAnimationFrame(function(){
+      backdrop.classList.add("open");
+      drawer.classList.add("open");
+    });
+
+    document.getElementById("navHome").onclick = function(){ closeDrawer(); goHome(); };
+    document.getElementById("navLog").onclick = function(){ closeDrawer(); goLog(); };
+    document.getElementById("navSettings").onclick = function(){ closeDrawer(); goSettings(); };
+  }
+
+  function closeDrawer(){
+    var drawer = document.getElementById("sideDrawer");
+    var backdrop = document.getElementById("drawerBackdrop");
+    if (drawer) drawer.classList.remove("open");
+    if (backdrop) backdrop.classList.remove("open");
+    setTimeout(function(){
+      if (drawer) drawer.remove();
+      if (backdrop) backdrop.remove();
+    }, 280);
+  }
+
+  function closeAnyOverlayInstant(){
+    ["detailPage","logPage","settingsPage"].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.remove();
+    });
+  }
+
+  function setFabVisible(visible){
+    var fab = document.getElementById("fabAdd");
+    if (fab) fab.style.display = visible ? "flex" : "none";
+  }
+
+  function goHome(){
+    closeAnyOverlayInstant();
+    view.mode = "main";
+    view.categoryId = null;
+    renderMain();
+    setFabVisible(true);
+  }
+
+  function goLog(){
+    closeAnyOverlayInstant();
+    openLog();
+    setFabVisible(true);
+  }
+
+  function goSettings(){
+    closeAnyOverlayInstant();
+    openSettings();
+    setFabVisible(false);
+  }
+
+  /* ---------------- settings page ---------------- */
+  function openSettings(){
+    view.mode = "settings";
+    var old = document.getElementById("settingsPage");
+    if (old) old.remove();
+
+    var wrap = document.createElement("div");
+    wrap.className = "detail";
+    wrap.id = "settingsPage";
+
+    var totalTasks = state.todos.length;
+    var totalDone = state.todos.filter(function(t){ return t.completed; }).length;
+    var totalLists = state.categories.length;
+
+    var html = '';
+    html += '<div class="detail-top">';
+    html += '  <button class="icon-btn" id="settingsMenuBtn" aria-label="menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>';
+    html += '  <div class="detail-title-wrap"><span class="detail-title">設定</span></div>';
+    html += '</div>';
+
+    html += '<div class="settings-group">';
+    html += '  <div class="settings-row"><span class="settings-row-label">リスト数</span><span class="settings-row-value">'+totalLists+'</span></div>';
+    html += '  <div class="settings-row"><span class="settings-row-label">タスク数</span><span class="settings-row-value">'+totalTasks+'</span></div>';
+    html += '  <div class="settings-row"><span class="settings-row-label">完了済み</span><span class="settings-row-value">'+totalDone+'</span></div>';
+    html += '</div>';
+
+    html += '<div class="settings-group">';
+    html += '  <div class="settings-row"><span class="settings-row-label">完了タスクの自動削除</span><span class="settings-row-value">30日後</span></div>';
+    html += '</div>';
+
+    html += '<div class="settings-section-label">リストの管理</div>';
+    html += '<div class="settings-group" id="listManageGroup">';
+    if (state.categories.length === 0){
+      html += '  <div class="settings-row"><span class="settings-row-value">リストがありません</span></div>';
+    } else {
+      state.categories.slice().sort(function(a,b){ return a.order-b.order; }).forEach(function(c){
+        html += '  <div class="settings-row">';
+        html += '    <span class="settings-row-label"><span class="log-dot" style="background:'+c.color+';margin-right:8px;"></span>'+esc(c.title)+'</span>';
+        html += '    <button class="drow-del" data-delcat="'+c.id+'" aria-label="delete">×</button>';
+        html += '  </div>';
+      });
+    }
+    html += '</div>';
+
+    html += '<div class="settings-group">';
+    html += '  <div class="settings-row"><span class="settings-row-label settings-danger" id="resetDataBtn">すべてのデータを削除</span></div>';
+    html += '</div>';
+
+    wrap.innerHTML = html;
+    document.body.appendChild(wrap);
+    requestAnimationFrame(function(){ wrap.classList.add("open"); });
+
+    document.getElementById("settingsMenuBtn").onclick = openDrawer;
+
+    wrap.querySelectorAll("[data-delcat]").forEach(function(btn){
+      btn.onclick = function(){
+        var catId = btn.getAttribute("data-delcat");
+        var cat = state.categories.find(function(c){ return c.id === catId; });
+        var name = cat ? cat.title : "";
+        if (confirm('「'+name+'」を削除しますか？中のタスクもすべて削除されます。')){
+          deleteCategory(catId);
+          openSettings();
+        }
+      };
+    });
+    document.getElementById("resetDataBtn").onclick = function(){
+      if (confirm("すべてのリストとタスクを削除します。よろしいですか？")){
+        state = { categories: [], todos: [] };
+        saveState();
+        closeSettings();
+      }
+    };
+  }
+
+  function closeSettings(){
+    view.mode = "main";
+    var existing = document.getElementById("settingsPage");
+    if (existing) existing.classList.remove("open");
+    renderMain();
+    setFabVisible(true);
+    setTimeout(function(){
+      if (existing) existing.remove();
+    }, 280);
+  }
+
+  function openLog(){
+    view.mode = "log";
+    var old = document.getElementById("logPage");
+    if (old) old.remove();
+
+    var wrap = document.createElement("div");
+    wrap.className = "detail";
+    wrap.id = "logPage";
+
+    var html = '';
+    html += '<div class="detail-top">';
+    html += '  <button class="icon-btn" id="logMenuBtn" aria-label="menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>';
+    html += '  <div class="detail-title-wrap"><span class="detail-title">ログ（完了したタスク）</span></div>';
+    html += '</div>';
+    html += '<div class="log-hint">';
+    html += '  <span><span class="hint-swatch hint-restore">'+restoreSvg+'</span>タップで未完了に戻す</span>';
+    html += '  <span><span class="hint-swatch hint-delete">'+trashSvg+'</span>タップで完全に削除</span>';
+    html += '</div>';
+    html += '<div class="detail-list" id="logList"></div>';
+
+    wrap.innerHTML = html;
+    document.body.appendChild(wrap);
+    requestAnimationFrame(function(){ wrap.classList.add("open"); });
+
+    document.getElementById("logMenuBtn").onclick = openDrawer;
+
+    renderLogList(false);
+  }
+
+  function closeLog(){
+    view.mode = "main";
+    var existing = document.getElementById("logPage");
+    if (existing) existing.classList.remove("open");
+    renderMain();
+    setTimeout(function(){
+      if (existing) existing.remove();
+    }, 280);
+  }
+
+  function fmtLogDate(ts){
+    if (!ts) return "";
+    var d = new Date(ts);
+    return (d.getMonth()+1) + "/" + d.getDate();
+  }
+
+  function renderLogList(animate){
+    var container = document.getElementById("logList");
+    if (!container) return;
+    if (animate === undefined) animate = true;
+
+    var oldRects = {};
+    if (animate){
+      container.querySelectorAll(".drow").forEach(function(r){
+        oldRects[r.getAttribute("data-id")] = r.getBoundingClientRect();
+      });
+    }
+
+    var completed = state.todos.filter(function(t){ return t.completed; })
+      .sort(function(a,b){ return (b.completedAt||0) - (a.completedAt||0); });
+
+    var html = '';
+    if (completed.length === 0){
+      html = '<div class="log-empty">まだ完了したタスクはありません。</div>';
+    } else {
+      completed.forEach(function(t){
+        var cat = state.categories.find(function(c){ return c.id === t.categoryId; });
+        html += '<div class="drow log-row" data-id="'+t.id+'">';
+        html += '  <span class="dcheck restore" data-undo="'+t.id+'" aria-label="未完了に戻す">'+restoreSvg+'</span>';
+        html += '  <div class="dtext-wrap">';
+        html += '    <div class="dtitle">'+esc(t.title)+'</div>';
+        html += '    <div class="log-meta">';
+        if (cat){
+          html += '<span class="log-dot" style="background:'+cat.color+'"></span><span class="log-cat">'+esc(cat.title)+'</span>';
+        }
+        html += '<span class="log-date">'+fmtLogDate(t.completedAt)+' 完了</span>';
+        html += '    </div>';
+        html += '  </div>';
+        html += '  <button class="drow-del log-del" data-deltodo="'+t.id+'" aria-label="完全に削除">'+trashSvg+'</button>';
+        html += '</div>';
+      });
+    }
+    container.innerHTML = html;
+
+    container.querySelectorAll("[data-undo]").forEach(function(el){
+      el.onclick = function(){
+        undoTodo(el.getAttribute("data-undo"));
+      };
+    });
+    container.querySelectorAll("[data-deltodo]").forEach(function(el){
+      el.onclick = function(e){
+        e.stopPropagation();
+        deleteTodoFromLog(el.getAttribute("data-deltodo"));
+      };
+    });
+
+    if (animate){
+      container.querySelectorAll(".drow").forEach(function(r){
+        var id = r.getAttribute("data-id");
+        var old = oldRects[id];
+        if (old){
+          var nr = r.getBoundingClientRect();
+          var dy = old.top - nr.top;
+          if (Math.abs(dy) > 1){
+            r.style.transition = "none";
+            r.style.transform = "translateY(" + dy + "px)";
+            requestAnimationFrame(function(){
+              r.style.transition = "transform 220ms cubic-bezier(.4,0,.2,1)";
+              r.style.transform = "";
+            });
+          }
+        }
+      });
+    }
+  }
+
+  function undoTodo(id){
+    var t = state.todos.find(function(x){ return x.id === id; });
+    if (!t) return;
+    var row = document.querySelector('#logList .drow[data-id="'+id+'"]');
+    function apply(){
+      t.completed = false;
+      t.completedAt = null;
+      saveState();
+      renderLogList();
+    }
+    if (row){
+      row.style.transition = "opacity 150ms ease, transform 150ms ease";
+      row.style.opacity = "0";
+      row.style.transform = "translateX(-20px)";
+      setTimeout(apply, 150);
+    } else {
+      apply();
+    }
+  }
+
+  function deleteTodoFromLog(id){
+    var row = document.querySelector('#logList .drow[data-id="'+id+'"]');
+    function apply(){
+      state.todos = state.todos.filter(function(x){ return x.id !== id; });
+      saveState();
+      renderLogList();
+    }
+    if (row){
+      row.style.transition = "opacity 150ms ease, transform 150ms ease";
+      row.style.opacity = "0";
+      row.style.transform = "translateX(20px)";
+      setTimeout(apply, 150);
+    } else {
+      apply();
+    }
+  }
+
+  /* Moves fromId next to toId. insertAfter=false puts it just above
+     (before) toId; insertAfter=true puts it just below (after) toId. */
+  function reorderCategories(fromId, toId, insertAfter){
+    var cats = state.categories.slice().sort(function(a,b){ return a.order - b.order; });
+    var fromIdx = cats.findIndex(function(c){ return c.id === fromId; });
+    if (fromIdx < 0) return;
+    var moved = cats.splice(fromIdx,1)[0];
+    var toIdx = cats.findIndex(function(c){ return c.id === toId; });
+    if (toIdx < 0){
+      cats.push(moved);
+    } else {
+      cats.splice(insertAfter ? toIdx+1 : toIdx, 0, moved);
+    }
+    cats.forEach(function(c,i){ c.order = i; });
+    saveState();
+    renderMain(true);
+  }
+
+  /* Long-press + drag to reorder cards (pointer events: works for touch and mouse). */
+  function startCardDrag(e, card, catId){
+    var startX = e.clientX, startY = e.clientY;
+    var pointerId = e.pointerId;
+    var longPress = false;
+    var holdTimer = setTimeout(function(){
+      longPress = true;
+      card.classList.add("dragging");
+      try { card.setPointerCapture(pointerId); } catch(err){}
+    }, 260);
+
+    function currentTarget(clientX, clientY){
+      card.style.pointerEvents = "none";
+      var el = document.elementFromPoint(clientX, clientY);
+      card.style.pointerEvents = "";
+      return el && el.closest ? el.closest(".card") : null;
+    }
+
+    var dropInfo = null; /* { targetId, after } — where the card will be inserted */
+
+    function clearDragOverMarks(){
+      document.querySelectorAll(".card.drag-over-before, .card.drag-over-after").forEach(function(c){
+        c.classList.remove("drag-over-before", "drag-over-after");
+      });
+    }
+
+    function onMove(ev){
+      if (ev.pointerId !== pointerId) return;
+      var dx = ev.clientX - startX, dy = ev.clientY - startY;
+      if (!longPress){
+        if (Math.hypot(dx, dy) > 10){ clearTimeout(holdTimer); cleanup(); }
+        return;
+      }
+      ev.preventDefault();
+      card.style.transition = "none";
+      card.style.transform = "translate(" + dx + "px," + dy + "px) scale(1.03)";
+      clearDragOverMarks();
+      var target = currentTarget(ev.clientX, ev.clientY);
+      if (target && target !== card){
+        var rect = target.getBoundingClientRect();
+        var after = (ev.clientY - rect.top) > (rect.height / 2);
+        target.classList.add(after ? "drag-over-after" : "drag-over-before");
+        dropInfo = { targetId: target.getAttribute("data-catid"), after: after };
+      } else {
+        dropInfo = null;
+      }
+    }
+
+    function onUp(ev){
+      if (ev.pointerId !== pointerId) return;
+      clearTimeout(holdTimer);
+      cleanup();
+      if (!longPress) return;
+      clearDragOverMarks();
+      card.classList.remove("dragging");
+      card.style.transition = "transform 150ms ease";
+      card.style.transform = "";
+      setTimeout(function(){ card.style.transition = ""; }, 160);
+      if (dropInfo && dropInfo.targetId !== catId){
+        reorderCategories(catId, dropInfo.targetId, dropInfo.after);
+      }
+    }
+
+    function cleanup(){
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
+    }
+
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+    document.addEventListener("pointercancel", onUp);
+  }
+
+  function deleteCategory(catId){
+    state.categories = state.categories.filter(function(c){ return c.id !== catId; });
+    state.todos = state.todos.filter(function(t){ return t.categoryId !== catId; });
+    saveState();
+    renderMain();
+  }
+
+  /* ---------------- modal: add category ---------------- */
+  function openAddCategoryModal(){
+    var usedColors = state.categories.map(function(c){ return c.color; });
+    var availableColors = COLORS.filter(function(c){ return usedColors.indexOf(c) === -1; });
+
+    if (availableColors.length === 0){
+      alert("これ以上リストを追加できません（使える色をすべて使い切りました）");
+      return;
+    }
+
+    var chosen = availableColors[Math.floor(Math.random()*availableColors.length)];
+    var backdrop = document.createElement("div");
+    backdrop.className = "modal-backdrop";
+    var swatchHtml = availableColors.map(function(c){
+      return '<span class="swatch'+(c===chosen?' sel':'')+'" data-color="'+c+'" style="background:'+c+'"></span>';
+    }).join('');
+    backdrop.innerHTML =
+      '<div class="modal">'+
+      '  <h3>新しいリスト</h3>'+
+      '  <input type="text" id="newCatTitle" placeholder="リスト名" maxlength="20">'+
+      '  <div class="swatches" id="swatches">'+swatchHtml+'</div>'+
+      '  <div class="modal-actions">'+
+      '    <button class="modal-btn cancel" id="catCancel">キャンセル</button>'+
+      '    <button class="modal-btn ok" id="catOk">追加</button>'+
+      '  </div>'+
+      '</div>';
+    document.body.appendChild(backdrop);
+    var input = backdrop.querySelector("#newCatTitle");
+    input.focus();
+
+    backdrop.querySelectorAll(".swatch").forEach(function(sw){
+      sw.onclick = function(){
+        backdrop.querySelectorAll(".swatch").forEach(function(s){ s.classList.remove("sel"); });
+        sw.classList.add("sel");
+        chosen = sw.getAttribute("data-color");
+      };
+    });
+    backdrop.querySelector("#catCancel").onclick = function(){ backdrop.remove(); };
+    backdrop.addEventListener("click", function(e){ if (e.target === backdrop) backdrop.remove(); });
+    backdrop.querySelector("#catOk").onclick = function(){
+      var title = input.value.trim();
+      if (!title) { input.focus(); return; }
+      var maxOrder = state.categories.reduce(function(m,c){ return Math.max(m,c.order); }, -1);
+      state.categories.push({ id: uid(), title: title, color: chosen, order: maxOrder+1 });
+      saveState();
+      backdrop.remove();
+      renderMain();
+    };
+  }
+
+  /* ---------------- init ---------------- */
+  loadState(function(loaded){
+    state = loaded;
+    var changed = cleanupOldCompleted();
+    if (changed) saveState();
+    renderMain();
+    setupFabDrag();
+    setupOutsideTapCancel();
+  });
+
+  /* Tapping anywhere outside a card that has its add-task form open cancels that form. */
+  function setupOutsideTapCancel(){
+    document.addEventListener("pointerdown", function(e){
+      var openCatIds = Object.keys(addModeCats).filter(function(id){ return addModeCats[id]; });
+      if (openCatIds.length === 0) return;
+      var clickedCard = e.target.closest ? e.target.closest(".card") : null;
+      var clickedCatId = clickedCard ? clickedCard.getAttribute("data-catid") : null;
+      openCatIds.forEach(function(catId){
+        if (catId !== clickedCatId){
+          delete addModeCats[catId];
+          renderCard(catId);
+        }
+      });
+    });
+  }
+
+  /* FAB: tap -> add new list. Drag onto a card -> open that card's add-task form. */
+  function setupFabDrag(){
+    var fab = document.getElementById("fabAdd");
+    var drag = { active:false, moved:false, startX:0, startY:0, pointerId:null };
+
+    fab.addEventListener("pointerdown", function(e){
+      drag.active = true;
+      drag.moved = false;
+      drag.startX = e.clientX;
+      drag.startY = e.clientY;
+      drag.pointerId = e.pointerId;
+      fab.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+
+    fab.addEventListener("pointermove", function(e){
+      if (!drag.active) return;
+      var dx = e.clientX - drag.startX;
+      var dy = e.clientY - drag.startY;
+      if (!drag.moved && Math.hypot(dx, dy) > 12){
+        drag.moved = true;
+        fab.classList.add("fab-dragging");
+      }
+      if (drag.moved){
+        fab.style.transform = "translate(" + dx + "px," + dy + "px)";
+        document.querySelectorAll(".card.drop-target").forEach(function(c){ c.classList.remove("drop-target"); });
+        fab.style.pointerEvents = "none";
+        var el = document.elementFromPoint(e.clientX, e.clientY);
+        fab.style.pointerEvents = "";
+        var card = el && el.closest ? el.closest(".card") : null;
+        if (card) card.classList.add("drop-target");
+      }
+    });
+
+    function finish(e){
+      if (!drag.active) return;
+      drag.active = false;
+      try { fab.releasePointerCapture(drag.pointerId); } catch(err){}
+      document.querySelectorAll(".card.drop-target").forEach(function(c){ c.classList.remove("drop-target"); });
+      if (drag.moved){
+        fab.classList.remove("fab-dragging");
+        fab.style.transform = "";
+        fab.style.pointerEvents = "none";
+        var el = document.elementFromPoint(e.clientX, e.clientY);
+        fab.style.pointerEvents = "";
+        var card = el && el.closest ? el.closest(".card") : null;
+        if (card){
+          var catId = card.getAttribute("data-catid");
+          addModeCats[catId] = true;
+          renderCard(catId);
+        }
+      } else {
+        openAddCategoryModal();
+      }
+    }
+
+    fab.addEventListener("pointerup", finish);
+    fab.addEventListener("pointercancel", function(){
+      drag.active = false;
+      fab.classList.remove("fab-dragging");
+      fab.style.transform = "";
+      document.querySelectorAll(".card.drop-target").forEach(function(c){ c.classList.remove("drop-target"); });
+    });
+  }
+})();
+</script>
+</body>
+</html>
