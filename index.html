@@ -668,10 +668,15 @@
         colL = null; colR = null;
         return;
       }
-      /* Force into the right-hand column of a brand-new row so it
-         always lands bottom-right, instead of wherever the shortest-
-         column masonry would otherwise put it. */
-      startNewColumnRow();
+      /* Always the right-hand column (so it lands bottom-right), but
+         appended to whatever column layout is already there instead of
+         forcing a brand-new row — starting a fresh row would leave an
+         empty left column next to it, and since a new row begins right
+         after the previous one regardless of how uneven the two
+         columns were, that leftover height difference would show up
+         as an odd gap right before this card. Continuing the same
+         column keeps it flush after the last item. */
+      if (!colL) startNewColumnRow();
       colR.appendChild(cardEl);
     });
 
