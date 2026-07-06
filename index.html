@@ -106,7 +106,10 @@
     padding:14px 16px; border-bottom:1px solid var(--line); font-size:15px;
   }
   .settings-row:last-child{ border-bottom:none; }
-  .settings-row-label{ color:var(--text-main); }
+  .settings-row-label{
+    color:var(--text-main); min-width:0; overflow:hidden; text-overflow:ellipsis;
+    white-space:nowrap; display:flex; align-items:center;
+  }
   .settings-row-value{ color:var(--text-sub); font-size:13.5px; }
   .settings-danger{ color:#E0507A; cursor:pointer; font-weight:600; }
   .settings-danger:active{ opacity:0.6; }
@@ -114,13 +117,23 @@
     font-size:12.5px; font-weight:700; color:var(--text-sub); letter-spacing:0.03em;
     margin: 18px 14px 6px 20px;
   }
+  .settings-hint{
+    font-size:12px; color:var(--text-sub); line-height:1.5;
+    margin: -2px 20px 10px 20px;
+  }
 
-  /* ---------- Main grid (masonry: 2 independent columns, shortest gets next card) ---------- */
+  /* ---------- Main grid (masonry: 2 independent columns, shortest gets next card;
+     "wide" cards break out and take the full width of both columns) ---------- */
   .grid{
+    display:flex;
+    flex-direction:column;
+    gap: 14px;
+    padding: 6px 14px 20px 14px;
+  }
+  .grid-row{
     display:flex;
     align-items:flex-start;
     gap: 14px;
-    padding: 6px 14px 20px 14px;
   }
   .grid-col{
     display:flex;
@@ -129,12 +142,15 @@
     flex: 1 1 0;
     min-width: 0;
   }
+  .grid-wide{ width:100%; }
+  .grid-wide .card{ width:100%; }
   @media (max-width: 480px){
     .grid{ gap: 10px; padding: 6px 10px 20px 10px; }
+    .grid-row{ gap: 10px; }
     .grid-col{ gap: 10px; }
   }
   @media (max-width: 340px){
-    .grid{ flex-direction:column; }
+    .grid-row{ flex-direction:column; }
   }
 
   .card{
@@ -391,6 +407,15 @@
   .modal-btn.cancel{ background:#F1F1F5; color:var(--text-sub); }
   .modal-btn.ok{ background: var(--accent); color:white; }
 
+  /* ---------- Settings: per-list width toggle ---------- */
+  .settings-row-actions{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .width-toggle{
+    border:none; background:#F1F1F5; color:var(--text-sub); font-size:12px; font-weight:600;
+    padding:6px 10px; border-radius:8px; cursor:pointer; white-space:nowrap; font-family:inherit;
+  }
+  .width-toggle.wide{ background:#FBEBD2; color:#8A5A12; }
+  .width-toggle:active{ opacity:0.6; }
+
 </style>
 </head>
 <body>
@@ -562,24 +587,47 @@
     html += '<span style="width:40px"></span>';
     html += '</div>';
 
-    html += '<div class="grid" id="grid">';
-    html += '  <div class="grid-col" id="gridColL"></div>';
-    html += '  <div class="grid-col" id="gridColR"></div>';
-    html += '</div>';
+    html += '<div class="grid" id="grid"></div>';
 
     app.innerHTML = html;
     document.getElementById("menuBtn").onclick = openDrawer;
 
-    /* Masonry placement: put each card into whichever column is
-       currently shorter, so short/tall cards pack tightly without
-       leaving a big gap under a short neighbor. */
-    var colL = document.getElementById("gridColL");
-    var colR = document.getElementById("gridColR");
-    var heightL = 0, heightR = 0;
+    /* Masonry placement: within a run of normal-width cards, each card
+       goes into whichever column is currently shorter, so short/tall
+       cards pack tightly without leaving a big gap under a short
+       neighbor. A "wide" card (cat.wide) breaks out of the two-column
+       run entirely and takes the full width on its own row; the two
+       columns then start fresh again after it. */
+    var grid = document.getElementById("grid");
+    var colL = null, colR = null, heightL = 0, heightR = 0;
+
+    function startNewColumnRow(){
+      var row = document.createElement("div");
+      row.className = "grid-row";
+      colL = document.createElement("div"); colL.className = "grid-col";
+      colR = document.createElement("div"); colR.className = "grid-col";
+      row.appendChild(colL);
+      row.appendChild(colR);
+      grid.appendChild(row);
+      heightL = 0; heightR = 0;
+    }
+
     cats.forEach(function(cat){
       var temp = document.createElement("div");
       temp.innerHTML = buildCardHtml(cat);
       var cardEl = temp.firstElementChild;
+      attachCardEvents(cardEl, cardEl.getAttribute("data-catid"));
+
+      if (cat.wide){
+        var wideWrap = document.createElement("div");
+        wideWrap.className = "grid-wide";
+        wideWrap.appendChild(cardEl);
+        grid.appendChild(wideWrap);
+        colL = null; colR = null; /* next normal card starts a fresh pair */
+        return;
+      }
+
+      if (!colL) startNewColumnRow();
       if (heightL <= heightR){
         colL.appendChild(cardEl);
       } else {
@@ -587,7 +635,6 @@
       }
       var h = cardEl.offsetHeight;
       if (cardEl.parentElement === colL) heightL += h; else heightR += h;
-      attachCardEvents(cardEl, cardEl.getAttribute("data-catid"));
     });
 
     if (animate){
@@ -883,6 +930,7 @@
     html += '</div>';
 
     html += '<div class="settings-section-label">リストの管理</div>';
+    html += '<div class="settings-hint">「全幅」にすると、日付付きの長いタスクが多いリストをホーム画面で横いっぱいに表示できます。</div>';
     html += '<div class="settings-group" id="listManageGroup">';
     if (state.categories.length === 0){
       html += '  <div class="settings-row"><span class="settings-row-value">リストがありません</span></div>';
@@ -890,7 +938,10 @@
       state.categories.slice().sort(function(a,b){ return a.order-b.order; }).forEach(function(c){
         html += '  <div class="settings-row">';
         html += '    <span class="settings-row-label"><span class="log-dot" style="background:'+c.color+';margin-right:8px;"></span>'+esc(c.title)+'</span>';
-        html += '    <button class="drow-del" data-delcat="'+c.id+'" aria-label="delete">×</button>';
+        html += '    <span class="settings-row-actions">';
+        html += '      <button class="width-toggle'+(c.wide ? ' wide' : '')+'" data-widetoggle="'+c.id+'">'+(c.wide ? '全幅' : '半分')+'</button>';
+        html += '      <button class="drow-del" data-delcat="'+c.id+'" aria-label="delete">×</button>';
+        html += '    </span>';
         html += '  </div>';
       });
     }
@@ -906,6 +957,16 @@
 
     document.getElementById("settingsMenuBtn").onclick = openDrawer;
 
+    wrap.querySelectorAll("[data-widetoggle]").forEach(function(btn){
+      btn.onclick = function(){
+        var catId = btn.getAttribute("data-widetoggle");
+        var cat = state.categories.find(function(c){ return c.id === catId; });
+        if (!cat) return;
+        cat.wide = !cat.wide;
+        saveState();
+        openSettings();
+      };
+    });
     wrap.querySelectorAll("[data-delcat]").forEach(function(btn){
       btn.onclick = function(){
         var catId = btn.getAttribute("data-delcat");
