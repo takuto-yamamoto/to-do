@@ -254,14 +254,14 @@
     margin-top:6px; padding:8px; background:#F8F8FA; border-radius:12px;
   }
   .mini-input{
-    width:100%; border:none; outline:none; font-size:13.5px; padding:5px 2px;
+    width:100%; border:none; outline:none; font-size:16px; padding:6px 2px;
     border-bottom:1px solid var(--line); background:transparent; color:var(--text-main);
     font-family:inherit;
   }
   .mini-row2{ display:flex; align-items:center; gap:6px; margin-top:5px; min-width:0; }
   .mini-date{
     flex:1; min-width:0; max-width:100%; border:none; outline:none; background:#FFFFFF; border-radius:8px;
-    padding:6px 8px; font-size:12px; color:var(--text-main); font-family:inherit;
+    padding:6px 8px; font-size:16px; color:var(--text-main); font-family:inherit;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
   }
   .mini-row3{ display:flex; align-items:center; gap:6px; margin-top:5px; min-width:0; }
@@ -294,6 +294,15 @@
     touch-action: none;
   }
   .fab:active{ transform: scale(0.94); }
+  /* Hidden while a text field is focused (keyboard visible) — see the
+     focusin/focusout handler near the end of the script. Keeps the FAB
+     from floating awkwardly on top of the software keyboard and avoids
+     accidental drags while the user is typing. */
+  body.keyboard-open .fab{ opacity:0; pointer-events:none; transition: opacity 120ms ease; }
+  /* While typing inside the "new list" modal, anchor it near the top
+     instead of vertically centering it, so it doesn't get pushed half
+     behind the keyboard on shorter iPhone screens. */
+  .modal-backdrop.kb-open{ align-items:flex-start; padding-top:12vh; }
 
   /* ---------- Detail page ---------- */
   .detail{
@@ -375,14 +384,14 @@
     box-shadow: var(--shadow); padding: 14px;
   }
   .add-form input[type=text]{
-    width:100%; border:none; outline:none; font-size:15.5px; padding:10px 4px;
+    width:100%; border:none; outline:none; font-size:16px; padding:10px 4px;
     border-bottom: 1px solid var(--line); color:var(--text-main); background:transparent;
     font-family:inherit;
   }
   .add-row2{ display:flex; align-items:center; gap:10px; margin-top:10px; }
   .add-row2 input[type=date]{
     flex:1; border:none; outline:none; background:#F6F6F8; border-radius:10px;
-    padding:9px 10px; font-size:14px; color:var(--text-main); font-family:inherit;
+    padding:9px 10px; font-size:16px; color:var(--text-main); font-family:inherit;
   }
   .add-submit{
     border:none; background: var(--accent); color:white; font-weight:600;
@@ -403,7 +412,7 @@
   .modal h3{ margin:0 0 14px 0; font-size:17px; }
   .modal input[type=text]{
     width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line);
-    font-size:15px; outline:none; font-family:inherit; margin-bottom:14px;
+    font-size:16px; outline:none; font-family:inherit; margin-bottom:14px;
   }
   .swatches{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
   .swatch{
@@ -427,7 +436,70 @@
   .width-toggle.wide{ background:#FBEBD2; color:#8A5A12; }
   .width-toggle:active{ opacity:0.6; }
 
+
+  /* ---------- Orientation lock ---------- */
+  /* Applied/removed by JS (see script right after this style block) based on
+     actual device rotation. Rotates the whole page back so it always reads
+     as portrait, even while the device itself is held sideways. */
+  html.force-portrait-cw{
+    transform: rotate(-90deg);
+    transform-origin: left top;
+    width: 100vh;
+    height: 100vw;
+    overflow: hidden;
+    position: absolute;
+    top: 100%;
+    left: 0;
+  }
+  html.force-portrait-ccw{
+    transform: rotate(90deg);
+    transform-origin: left top;
+    width: 100vh;
+    height: 100vw;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 100%;
+  }
 </style>
+<script>
+  /* Runs immediately (before body paints) so there's no flash of sideways
+     content. Re-applied on every resize/orientationchange. Tries the native
+     Screen Orientation API first (works in some installed/fullscreen
+     contexts); the CSS rotation below is the fallback that actually works
+     in a plain mobile browser tab or iOS "Add to Home Screen" app, where
+     screen.orientation.lock is not available. */
+  (function(){
+    if (screen.orientation && screen.orientation.lock){
+      screen.orientation.lock("portrait").catch(function(){});
+    }
+    function applyOrientationLock(){
+      var root = document.documentElement;
+      var landscape = window.innerWidth > window.innerHeight;
+      if (!landscape){
+        root.classList.remove("force-portrait-cw", "force-portrait-ccw");
+        return;
+      }
+      var angle = 0;
+      if (screen.orientation && typeof screen.orientation.angle === "number"){
+        angle = screen.orientation.angle;
+      } else if (typeof window.orientation === "number"){
+        angle = window.orientation;
+      }
+      var norm = ((angle % 360) + 360) % 360;
+      if (norm === 270){
+        root.classList.remove("force-portrait-cw");
+        root.classList.add("force-portrait-ccw");
+      } else {
+        root.classList.remove("force-portrait-ccw");
+        root.classList.add("force-portrait-cw");
+      }
+    }
+    window.addEventListener("orientationchange", function(){ setTimeout(applyOrientationLock, 60); });
+    window.addEventListener("resize", applyOrientationLock);
+    applyOrientationLock();
+  })();
+</script>
 </head>
 <body>
 <div id="app"></div>
@@ -566,9 +638,9 @@
     html += '  </div>';
     html += '  <div class="card-addzone'+(addModeCats[cat.id] ? ' active' : '')+'">';
     if (addModeCats[cat.id]){
-      html += '    <input type="text" class="mini-input" id="miniTitle-'+cat.id+'" placeholder="タスクを入力" maxlength="60">';
+      html += '    <input type="text" class="mini-input" id="miniTitle-'+cat.id+'" placeholder="タスクを入力" maxlength="60" enterkeyhint="next" autocomplete="off" autocorrect="off">';
       html += '    <div class="mini-row2">';
-      html += '      <input type="date" class="mini-date" id="miniDate-'+cat.id+'">';
+      html += '      <input type="date" class="mini-date" id="miniDate-'+cat.id+'" enterkeyhint="done">';
       html += '    </div>';
       html += '    <div class="mini-row3">';
       html += '      <button class="mini-add" id="miniAddBtn-'+cat.id+'">追加</button>';
@@ -1234,12 +1306,20 @@
       longPress = true;
       var cardHeight = card.getBoundingClientRect().height;
       try { card.setPointerCapture(pointerId); } catch(err){}
+      /* Disable native touch scrolling only once move mode is confirmed.
+         Otherwise the browser can treat the following finger movement as a
+         page scroll (based on the card's normal touch-action: pan-y) and
+         hijack the drag right as it's supposed to start — this is what
+         made moving a card down feel unreliable. Ordinary quick swipes
+         (under the 260ms hold) are untouched and keep scrolling normally. */
+      card.style.touchAction = "none";
       /* Immediate "lift" feedback right as move mode begins, before any
          finger movement, so it's clear the card has been picked up. */
       card.classList.add("dragging");
       card.style.transition = "transform 120ms ease";
       card.style.transform = "scale(1.045)";
       setTimeout(function(){ if (longPress) card.style.transition = "none"; }, 130);
+      if (navigator.vibrate) { try { navigator.vibrate(12); } catch(err){} }
 
       placeholder = document.createElement("div");
       placeholder.className = "drop-placeholder";
@@ -1313,6 +1393,7 @@
       if (ev.pointerId !== pointerId) return;
       clearTimeout(holdTimer);
       cleanup();
+      card.style.touchAction = "";
       if (!longPress) return;
       removePlaceholder();
       card.classList.remove("dragging");
@@ -1361,7 +1442,7 @@
     backdrop.innerHTML =
       '<div class="modal">'+
       '  <h3>新しいリスト</h3>'+
-      '  <input type="text" id="newCatTitle" placeholder="リスト名" maxlength="20">'+
+      '  <input type="text" id="newCatTitle" placeholder="リスト名" maxlength="20" enterkeyhint="done" autocomplete="off" autocorrect="off">'+
       '  <div class="swatches" id="swatches">'+swatchHtml+'</div>'+
       '  <div class="modal-actions">'+
       '    <button class="modal-btn cancel" id="catCancel">キャンセル</button>'+
@@ -1381,7 +1462,7 @@
     });
     backdrop.querySelector("#catCancel").onclick = function(){ backdrop.remove(); };
     backdrop.addEventListener("click", function(e){ if (e.target === backdrop) backdrop.remove(); });
-    backdrop.querySelector("#catOk").onclick = function(){
+    function confirmAdd(){
       var title = input.value.trim();
       if (!title) { input.focus(); return; }
       var maxOrder = state.categories.reduce(function(m,c){ return Math.max(m,c.order); }, -1);
@@ -1389,10 +1470,53 @@
       saveState();
       backdrop.remove();
       renderMain();
-    };
+    }
+    input.addEventListener("keydown", function(e){
+      if (e.key === "Enter"){ e.preventDefault(); confirmAdd(); }
+    });
+    backdrop.querySelector("#catOk").onclick = confirmAdd;
   }
 
   /* ---------------- init ---------------- */
+  /* ---------------- keyboard-aware focus handling ---------------- */
+  /* Applies to every text/date field in the app (inline card add-form,
+     new-list modal, etc.):
+     - hides the FAB while typing, so it doesn't sit on top of the keyboard
+     - nudges the focused field above the keyboard once it's finished
+       animating in, since iOS doesn't do this on its own for fields that
+       are already on-screen but low in the viewport
+     - anchors the "new list" modal near the top instead of centered, so
+       typing there doesn't push its buttons behind the keyboard */
+  (function(){
+    function isTextField(el){
+      return el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA");
+    }
+    document.addEventListener("focusin", function(e){
+      if (!isTextField(e.target)) return;
+      document.body.classList.add("keyboard-open");
+      var modal = e.target.closest(".modal-backdrop");
+      if (modal) modal.classList.add("kb-open");
+      var el = e.target;
+      setTimeout(function(){
+        if (document.activeElement === el){
+          el.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+      }, 320); /* rough duration of the iOS keyboard show animation */
+    });
+    document.addEventListener("focusout", function(e){
+      if (!isTextField(e.target)) return;
+      setTimeout(function(){
+        var active = document.activeElement;
+        if (!isTextField(active)){
+          document.body.classList.remove("keyboard-open");
+          document.querySelectorAll(".modal-backdrop.kb-open").forEach(function(m){
+            m.classList.remove("kb-open");
+          });
+        }
+      }, 50);
+    });
+  })();
+
   loadState(function(loaded){
     state = loaded;
     var changed = cleanupOldCompleted();
