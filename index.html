@@ -20,6 +20,7 @@
     --text-sub: #8E8E93;
     --line: #E9E9EE;
     --accent: #F5A623;
+    --success: #2FAE8E;
     --shadow: 0 2px 10px rgba(0,0,0,0.05);
     --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
     --radius: 18px;
@@ -248,6 +249,50 @@
     font-size:15px; cursor:pointer; border-radius:50%; flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
   }
+
+  /* ---------- Task completion (achievement) effect ---------- */
+  .ctodo-row.completing{ animation: ctodoBounce 260ms ease-out; }
+  .ctodo-row.completing .ctodo-text{
+    color:#C6C6CB; text-decoration: line-through;
+    transition: color 200ms ease 60ms;
+  }
+  .ctodo-row.completing .ctodo-due{ opacity:0.5; transition: opacity 200ms ease; }
+  .ctodo-row .ccheck{
+    position:relative;
+    transition: width 260ms cubic-bezier(.34,1.56,.64,1), height 260ms cubic-bezier(.34,1.56,.64,1),
+                margin-top 260ms cubic-bezier(.34,1.56,.64,1), background 200ms ease;
+  }
+  .ctodo-row.completing .ccheck{
+    width:17px; height:17px; margin-top:0;
+    background: var(--success) !important;
+    display:flex; align-items:center; justify-content:center;
+    animation: ccheckPop 380ms cubic-bezier(.34,1.56,.64,1);
+  }
+  .ctodo-row.completing .ccheck svg{
+    width:11px; height:11px; color:#fff;
+    stroke-dasharray: 24; stroke-dashoffset: 24;
+    animation: ccheckDraw 260ms ease-out 60ms forwards;
+  }
+  .ctodo-row.completing .ccheck::after{
+    content:''; position:absolute; inset:0; border-radius:50%;
+    border:2px solid var(--success);
+    animation: ccheckRing 480ms ease-out;
+  }
+  @keyframes ccheckPop{
+    0%{ transform:scale(0.3); }
+    55%{ transform:scale(1.25); }
+    100%{ transform:scale(1); }
+  }
+  @keyframes ccheckDraw{ to{ stroke-dashoffset:0; } }
+  @keyframes ccheckRing{
+    0%{ transform:scale(1); opacity:0.7; }
+    100%{ transform:scale(2.6); opacity:0; }
+  }
+  @keyframes ctodoBounce{
+    0%{ transform:scale(1); }
+    35%{ transform:scale(1.02); }
+    100%{ transform:scale(1); }
+  }
   .ctodo-del:active{ background: rgba(0,0,0,0.06); }
   .card-addzone{ margin-top:0; min-height:0; }
   .card-addzone.active{
@@ -473,10 +518,27 @@
     if (screen.orientation && screen.orientation.lock){
       screen.orientation.lock("portrait").catch(function(){});
     }
+    /* Real device orientation, independent of the on-screen keyboard.
+       window.innerWidth/innerHeight shrink when the keyboard opens, which
+       can make width > height even while the phone is physically upright —
+       that false "landscape" reading is what used to send the page into
+       the rotated layout (hidden FAB, unscrollable page) after leaving the
+       keyboard open and returning to the app. screen.orientation.type (and
+       the window.orientation angle fallback) reflect the actual physical
+       rotation and are not affected by the keyboard. */
+    function isLandscape(){
+      if (screen.orientation && typeof screen.orientation.type === "string"){
+        return screen.orientation.type.indexOf("landscape") === 0;
+      }
+      if (typeof window.orientation === "number"){
+        return Math.abs(window.orientation) === 90;
+      }
+      /* Last-resort fallback only, for browsers with neither API. */
+      return window.innerWidth > window.innerHeight;
+    }
     function applyOrientationLock(){
       var root = document.documentElement;
-      var landscape = window.innerWidth > window.innerHeight;
-      if (!landscape){
+      if (!isLandscape()){
         root.classList.remove("force-portrait-cw", "force-portrait-ccw");
         return;
       }
@@ -497,6 +559,17 @@
     }
     window.addEventListener("orientationchange", function(){ setTimeout(applyOrientationLock, 60); });
     window.addEventListener("resize", applyOrientationLock);
+    /* Self-heal: whenever the app becomes visible again (returning from
+       background/another tab without a full reload), re-evaluate. This
+       guards against any stale rotated state left over from before the
+       app was backgrounded. */
+    document.addEventListener("visibilitychange", function(){
+      if (!document.hidden) applyOrientationLock();
+    });
+    window.addEventListener("pageshow", applyOrientationLock);
+    if (screen.orientation && typeof screen.orientation.addEventListener === "function"){
+      screen.orientation.addEventListener("change", function(){ setTimeout(applyOrientationLock, 60); });
+    }
     applyOrientationLock();
   })();
 </script>
@@ -606,6 +679,7 @@
   }
 
   var restoreSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>';
+  var checkDoneSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>';
   var trashSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
 
   function esc(s){
@@ -614,6 +688,7 @@
 
   /* ---------------- render main ---------------- */
   var addModeCats = {}; /* catId -> true while its inline "add task" form is open */
+  var activeMomentumFrame = null; /* rAF handle for card-swipe scroll momentum, see startCardDrag */
 
   function buildCardHtml(cat){
     var todos = sortTodos(todosByCategory(cat.id).filter(function(t){ return !t.completed; }));
@@ -792,6 +867,7 @@
   function attachCardEvents(card, catId){
     card.addEventListener("pointerdown", function(e){
       if (e.target.closest("button, input, [data-check]")) return;
+      if (activeMomentumFrame){ cancelAnimationFrame(activeMomentumFrame); activeMomentumFrame = null; }
       startCardDrag(e, card, catId);
     });
 
@@ -876,9 +952,11 @@
 
   function completeTodoInline(id){
     var t = state.todos.find(function(x){ return x.id === id; });
-    if (!t) return;
+    if (!t || t.completed) return;
     var catId = t.categoryId;
     var row = document.querySelector('.ctodo-row[data-id="'+id+'"]');
+    if (row && row.classList.contains("completing")) return; /* animation already in flight
+      for this row — an extra rapid tap landing before it finishes must not restart it */
     function apply(){
       t.completed = true;
       t.completedAt = Date.now();
@@ -886,10 +964,29 @@
       renderCard(catId);
     }
     if (row){
-      row.style.transition = "opacity 150ms ease, transform 150ms ease";
-      row.style.opacity = "0";
-      row.style.transform = "translateX(14px)";
-      setTimeout(apply, 150);
+      if (navigator.vibrate){ try{ navigator.vibrate(15); }catch(err){} }
+      var checkEl = row.querySelector(".ccheck");
+      if (checkEl) checkEl.innerHTML = checkDoneSvg;
+      row.classList.add("completing");
+      /* Let the checkmark/strike-through play out fully before the row
+         collapses, so the "done" state is clearly seen rather than just
+         a quick fade — this is the visible confirmation the tap landed. */
+      setTimeout(function(){
+        var h = row.getBoundingClientRect().height;
+        row.style.height = h + "px";
+        row.style.overflow = "hidden";
+        row.style.willChange = "height, opacity";
+        requestAnimationFrame(function(){
+          row.style.transition = "height 220ms ease, opacity 220ms ease, padding 220ms ease, margin 220ms ease";
+          row.style.height = "0px";
+          row.style.opacity = "0";
+          row.style.paddingTop = "0px";
+          row.style.paddingBottom = "0px";
+          row.style.marginTop = "0px";
+          row.style.marginBottom = "0px";
+        });
+        setTimeout(apply, 230);
+      }, 480);
     } else {
       apply();
     }
@@ -1297,14 +1394,29 @@
   /* Long-press + drag to reorder cards (pointer events: works for touch and mouse). */
   function startCardDrag(e, card, catId){
     var startX = e.clientX, startY = e.clientY;
+    var curX = startX, curY = startY;
     var lastY = startY;
     var pointerId = e.pointerId;
     var longPress = false;
-    var scrolling = false; /* quick swipe on a card, forwarded as a manual page scroll */
+    var scrolling = false; /* swipe on a card, forwarded as a manual page scroll */
     var placeholder = null;
     var lastTargetId = null, lastAfter = null;
+    var velocity = 0; /* px/ms, for release momentum */
+    var lastMoveTime = Date.now();
 
     function enterMoveMode(){
+      /* The hold timer fires purely on elapsed time, so a slow, deliberate
+         scroll swipe (real finger movement, just under the 10px snap
+         threshold below) could otherwise still be sitting here 260ms in
+         and get hijacked into card-reorder mode. Re-check actual movement
+         at fire time: any real movement means this is a scroll, not a
+         long-press, no matter how slowly it started. */
+      if (Math.hypot(curX - startX, curY - startY) > 6){
+        scrolling = true;
+        lastY = curY;
+        lastMoveTime = Date.now();
+        return;
+      }
       longPress = true;
       var cardHeight = card.getBoundingClientRect().height;
       try { card.setPointerCapture(pointerId); } catch(err){}
@@ -1364,6 +1476,7 @@
 
     function onMove(ev){
       if (ev.pointerId !== pointerId) return;
+      curX = ev.clientX; curY = ev.clientY;
       var dx = ev.clientX - startX, dy = ev.clientY - startY;
 
       if (scrolling){
@@ -1371,8 +1484,13 @@
            can never be hijacked mid-gesture by native scrolling — see the
            note below). That means a quick swipe that started on a card
            no longer scrolls the page on its own, so forward it manually
-           here. No momentum, but it keeps plain scrolling usable. */
+           here. Track velocity as we go so release can carry on with a
+           bit of momentum, like a native scroll. */
+        var now = Date.now();
+        var dt = Math.max(now - lastMoveTime, 1);
         var stepY = ev.clientY - lastY;
+        velocity = stepY / dt;
+        lastMoveTime = now;
         lastY = ev.clientY;
         window.scrollBy(0, -stepY);
         return;
@@ -1383,6 +1501,7 @@
           clearTimeout(holdTimer);
           scrolling = true;
           lastY = ev.clientY;
+          lastMoveTime = Date.now();
         }
         return;
       }
@@ -1401,10 +1520,33 @@
       }
     }
 
+    /* Light-friction inertial scroll after lifting the finger, so a swipe
+       that started on a card feels like a normal smooth scroll instead of
+       stopping dead the instant the finger lifts. */
+    function startMomentum(){
+      var v = velocity;
+      if (!isFinite(v) || Math.abs(v) < 0.03) return;
+      var last = Date.now();
+      function step(){
+        var now = Date.now();
+        var dt = now - last;
+        last = now;
+        v *= Math.pow(0.94, dt / 16);
+        if (Math.abs(v) < 0.02){ activeMomentumFrame = null; return; }
+        window.scrollBy(0, -v * dt);
+        activeMomentumFrame = requestAnimationFrame(step);
+      }
+      activeMomentumFrame = requestAnimationFrame(step);
+    }
+
     function onUp(ev){
       if (ev.pointerId !== pointerId) return;
       clearTimeout(holdTimer);
       cleanup();
+      if (scrolling){
+        startMomentum();
+        return;
+      }
       if (!longPress) return;
       removePlaceholder();
       card.classList.remove("dragging");
@@ -1525,6 +1667,20 @@
           });
         }
       }, 50);
+    });
+    /* Self-heal: if the app is backgrounded while a field is focused, iOS
+       doesn't always fire focusout before/after the suspend. Without this,
+       "keyboard-open" can stay stuck on body, leaving the FAB permanently
+       invisible (opacity:0, pointer-events:none) after returning to the
+       app even though the keyboard isn't actually showing. */
+    document.addEventListener("visibilitychange", function(){
+      if (document.hidden) return;
+      if (!isTextField(document.activeElement)){
+        document.body.classList.remove("keyboard-open");
+        document.querySelectorAll(".modal-backdrop.kb-open").forEach(function(m){
+          m.classList.remove("kb-open");
+        });
+      }
     });
   })();
 
