@@ -1403,22 +1403,14 @@
     var lastTargetId = null, lastAfter = null;
     var velocity = 0; /* px/ms, for release momentum */
     var lastMoveTime = Date.now();
-    var pendingScrollDelta = 0; /* accumulated, unflushed scroll amount from fast pointermoves */
-    var scrollRafScheduled = false;
+    var pendingScrollDelta = 0; /* accumulated manual-scroll amount not yet flushed */
+    var scrollFlushRaf = null;
 
-    /* Applies at most once per animation frame, no matter how many
-       pointermove events arrived in between. Calling window.scrollBy()
-       synchronously on every single pointermove (which can fire many
-       times per frame during a fast swipe) forces a layout/scroll on
-       each call and stalls the main thread — that's what caused the
-       stutter/blank-screen effect on fast scrolls. Batching into one
-       call per frame fixes it. */
     function flushScroll(){
-      scrollRafScheduled = false;
-      if (pendingScrollDelta !== 0){
-        window.scrollBy(0, -pendingScrollDelta);
-        pendingScrollDelta = 0;
-      }
+      scrollFlushRaf = null;
+      if (pendingScrollDelta === 0) return;
+      window.scrollBy(0, pendingScrollDelta);
+      pendingScrollDelta = 0;
     }
 
     function enterMoveMode(){
@@ -1509,11 +1501,8 @@
         velocity = stepY / dt;
         lastMoveTime = now;
         lastY = ev.clientY;
-        pendingScrollDelta += stepY;
-        if (!scrollRafScheduled){
-          scrollRafScheduled = true;
-          requestAnimationFrame(flushScroll);
-        }
+        pendingScrollDelta += -stepY;
+        if (scrollFlushRaf === null) scrollFlushRaf = requestAnimationFrame(flushScroll);
         return;
       }
 
@@ -1565,7 +1554,6 @@
       clearTimeout(holdTimer);
       cleanup();
       if (scrolling){
-        flushScroll(); /* apply any last unflushed movement before momentum takes over */
         startMomentum();
         return;
       }
@@ -1584,6 +1572,7 @@
       document.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerup", onUp);
       document.removeEventListener("pointercancel", onUp);
+      if (scrollFlushRaf !== null){ cancelAnimationFrame(scrollFlushRaf); flushScroll(); }
     }
 
     document.addEventListener("pointermove", onMove);
