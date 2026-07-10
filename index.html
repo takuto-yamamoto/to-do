@@ -165,7 +165,7 @@
     display:flex; flex-direction:column;
     min-height: 90px;
     min-width: 0;
-    touch-action: none;
+    touch-action: pan-y;
   }
   .card.dragging{ box-shadow: var(--shadow-lg); z-index: 5; }
   .drop-placeholder{
@@ -688,7 +688,6 @@
 
   /* ---------------- render main ---------------- */
   var addModeCats = {}; /* catId -> true while its inline "add task" form is open */
-  var activeMomentumFrame = null; /* rAF handle for card-swipe scroll momentum, see startCardDrag */
 
   function buildCardHtml(cat){
     var todos = sortTodos(todosByCategory(cat.id).filter(function(t){ return !t.completed; }));
@@ -867,7 +866,6 @@
   function attachCardEvents(card, catId){
     card.addEventListener("pointerdown", function(e){
       if (e.target.closest("button, input, [data-check]")) return;
-      if (activeMomentumFrame){ cancelAnimationFrame(activeMomentumFrame); activeMomentumFrame = null; }
       startCardDrag(e, card, catId);
     });
 
@@ -1395,23 +1393,14 @@
   function startCardDrag(e, card, catId){
     var startX = e.clientX, startY = e.clientY;
     var curX = startX, curY = startY;
-    var lastY = startY;
     var pointerId = e.pointerId;
     var longPress = false;
-    var scrolling = false; /* swipe on a card, forwarded as a manual page scroll */
+    var abandoned = false; /* real finger movement happened before long-press was confirmed:
+                               this is an ordinary scroll swipe, so we get out of the way entirely
+                               and let the browser's native touch-action:pan-y scrolling handle it
+                               (no manual scrollBy/momentum — nothing beats native for smoothness) */
     var placeholder = null;
     var lastTargetId = null, lastAfter = null;
-    var velocity = 0; /* px/ms, for release momentum */
-    var lastMoveTime = Date.now();
-    var pendingScrollDelta = 0; /* accumulated manual-scroll amount not yet flushed */
-    var scrollFlushRaf = null;
-
-    function flushScroll(){
-      scrollFlushRaf = null;
-      if (pendingScrollDelta === 0) return;
-      window.scrollBy(0, pendingScrollDelta);
-      pendingScrollDelta = 0;
-    }
 
     function enterMoveMode(){
       /* The hold timer fires purely on elapsed time, so a slow, deliberate
@@ -1419,14 +1408,16 @@
          threshold below) could otherwise still be sitting here 260ms in
          and get hijacked into card-reorder mode. Re-check actual movement
          at fire time: any real movement means this is a scroll, not a
-         long-press, no matter how slowly it started. */
+         long-press, no matter how slowly it started. Crucially, at this
+         point native scrolling has NOT started yet (the finger has been
+         essentially still), so switching this card to touch-action:none
+         now reliably suppresses it for the drag that's about to begin. */
       if (Math.hypot(curX - startX, curY - startY) > 6){
-        scrolling = true;
-        lastY = curY;
-        lastMoveTime = Date.now();
+        abandoned = true;
         return;
       }
       longPress = true;
+      card.style.touchAction = "none";
       var cardHeight = card.getBoundingClientRect().height;
       try { card.setPointerCapture(pointerId); } catch(err){}
       /* Immediate "lift" feedback right as move mode begins, before any
@@ -1488,30 +1479,12 @@
       curX = ev.clientX; curY = ev.clientY;
       var dx = ev.clientX - startX, dy = ev.clientY - startY;
 
-      if (scrolling){
-        /* Cards have touch-action:none (needed so a real long-press drag
-           can never be hijacked mid-gesture by native scrolling — see the
-           note below). That means a quick swipe that started on a card
-           no longer scrolls the page on its own, so forward it manually
-           here. Track velocity as we go so release can carry on with a
-           bit of momentum, like a native scroll. */
-        var now = Date.now();
-        var dt = Math.max(now - lastMoveTime, 1);
-        var stepY = ev.clientY - lastY;
-        velocity = stepY / dt;
-        lastMoveTime = now;
-        lastY = ev.clientY;
-        pendingScrollDelta += -stepY;
-        if (scrollFlushRaf === null) scrollFlushRaf = requestAnimationFrame(flushScroll);
-        return;
-      }
+      if (abandoned) return; /* let the browser's native scroll run, untouched */
 
       if (!longPress){
         if (Math.hypot(dx, dy) > 10){
           clearTimeout(holdTimer);
-          scrolling = true;
-          lastY = ev.clientY;
-          lastMoveTime = Date.now();
+          abandoned = true;
         }
         return;
       }
@@ -1530,34 +1503,12 @@
       }
     }
 
-    /* Light-friction inertial scroll after lifting the finger, so a swipe
-       that started on a card feels like a normal smooth scroll instead of
-       stopping dead the instant the finger lifts. */
-    function startMomentum(){
-      var v = velocity;
-      if (!isFinite(v) || Math.abs(v) < 0.03) return;
-      var last = Date.now();
-      function step(){
-        var now = Date.now();
-        var dt = now - last;
-        last = now;
-        v *= Math.pow(0.94, dt / 16);
-        if (Math.abs(v) < 0.02){ activeMomentumFrame = null; return; }
-        window.scrollBy(0, -v * dt);
-        activeMomentumFrame = requestAnimationFrame(step);
-      }
-      activeMomentumFrame = requestAnimationFrame(step);
-    }
-
     function onUp(ev){
       if (ev.pointerId !== pointerId) return;
       clearTimeout(holdTimer);
       cleanup();
-      if (scrolling){
-        startMomentum();
-        return;
-      }
       if (!longPress) return;
+      card.style.touchAction = "";
       removePlaceholder();
       card.classList.remove("dragging");
       card.style.transition = "transform 150ms ease";
@@ -1572,7 +1523,6 @@
       document.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerup", onUp);
       document.removeEventListener("pointercancel", onUp);
-      if (scrollFlushRaf !== null){ cancelAnimationFrame(scrollFlushRaf); flushScroll(); }
     }
 
     document.addEventListener("pointermove", onMove);
