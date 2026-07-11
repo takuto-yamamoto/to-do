@@ -1452,52 +1452,76 @@
 
     var holdTimer = setTimeout(enterMoveMode, 260);
 
-    /* Which side (0 = left, 1 = right) a .grid-col belongs to within its row. */
-    function colIndexOf(el){
-      var colEl = el && el.closest ? el.closest(".grid-col") : null;
-      if (!colEl) return null;
-      var row = colEl.closest(".grid-row");
-      if (!row) return null;
-      var cols = row.querySelectorAll(".grid-col");
-      return cols[0] === colEl ? 0 : 1;
-    }
-
+    /* Figure out where to drop purely from geometry (row/column bounding
+       boxes) rather than elementFromPoint hit-testing. Hit-testing had
+       two problems: the 8–10px gap between columns is a "dead zone"
+       that belongs to neither column, so the placeholder would flicker
+       away and switching sides felt unreliable; and toggling
+       card.style.pointerEvents on every single pointermove forced a
+       synchronous style/layout recalculation each frame, which is what
+       made dragging feel laggy. Comparing coordinates against
+       getBoundingClientRect() avoids both: the whole row width is
+       cleanly split into a left half and a right half (no dead zone),
+       and nothing needs to be hidden/shown to read positions. */
     function findTargetCard(clientX, clientY){
-      card.style.pointerEvents = "none";
-      var el = document.elementFromPoint(clientX, clientY);
-      card.style.pointerEvents = "";
-      if (!el || !el.closest) return null;
-      var targetCard = el.closest(".card");
-      if (targetCard && targetCard !== card){
-        return { el: targetCard, col: colIndexOf(targetCard) };
+      var grid = document.getElementById("grid");
+      if (!grid) return null;
+      var blocks = Array.prototype.filter.call(grid.children, function(c){
+        return c.classList.contains("grid-row") || c.classList.contains("grid-wide");
+      });
+      if (!blocks.length) return null;
+
+      /* Find whichever row/wide block the pointer's Y is inside; if it's
+         above the first or below the last (or in a gap between rows),
+         fall back to the nearest one by vertical distance so dragging
+         to the very top/bottom of the grid still works. */
+      var block = null, bestDist = Infinity;
+      for (var i = 0; i < blocks.length; i++){
+        var r = blocks[i].getBoundingClientRect();
+        if (clientY >= r.top && clientY <= r.bottom){ block = blocks[i]; break; }
+        var d = clientY < r.top ? (r.top - clientY) : (clientY - r.bottom);
+        if (d < bestDist){ bestDist = d; block = blocks[i]; }
       }
-      /* Also allow dropping in the empty space below the last card of
-         a column (e.g. a short right column next to a tall left one),
-         and dropping into a column that has no cards in it at all —
-         left/right no longer need to hold equal counts, so a column
-         can be completely empty and still be a valid drop target. */
-      var col = el.closest(".grid-col");
-      if (col){
-        var cards = col.querySelectorAll(".card");
-        var last = cards[cards.length - 1];
-        if (last && last !== card){
-          return { el: last, after: true, col: colIndexOf(col) };
+      if (!block) return null;
+
+      if (block.classList.contains("grid-wide")){
+        var wideCard = block.querySelector(".card");
+        if (!wideCard || wideCard === card) return null;
+        var wr = wideCard.getBoundingClientRect();
+        return { el: wideCard, after: clientY > wr.top + wr.height / 2, col: null };
+      }
+
+      var rowRect = block.getBoundingClientRect();
+      var colIdx = (clientX - rowRect.left) < rowRect.width / 2 ? 0 : 1;
+      var cols = block.querySelectorAll(".grid-col");
+      var colEl = cols[colIdx];
+      if (!colEl) return null;
+
+      var cardsInCol = Array.prototype.filter.call(colEl.querySelectorAll(".card"), function(c){ return c !== card; });
+      if (!cardsInCol.length){
+        /* Column is empty on this side: still a valid drop target (left/
+           right no longer need equal counts), but we need *some* card
+           to anchor the underlying order list to, so borrow the last
+           card of the sibling column in this row purely for ordering —
+           the placeholder itself is drawn directly inside this empty
+           column via directCol, so what's shown always matches where
+           the card will actually land. */
+        var siblingCol = cols[1 - colIdx];
+        var siblingCards = siblingCol ? siblingCol.querySelectorAll(".card") : [];
+        var siblingLast = siblingCards.length ? siblingCards[siblingCards.length - 1] : null;
+        if (siblingLast && siblingLast !== card){
+          return { el: siblingLast, after: true, col: colIdx, directCol: colEl };
         }
-        var row = col.closest(".grid-row");
-        if (row){
-          var otherCol = Array.prototype.filter.call(row.querySelectorAll(".grid-col"), function(c){ return c !== col; })[0];
-          var otherLast = otherCol ? otherCol.querySelector(".card:last-child") : null;
-          if (otherLast && otherLast !== card){
-            /* Anchor to the neighboring column's last card (for ordering
-               purposes only) but force it onto the empty side the user
-               is actually hovering over. directCol is used below to draw
-               the placeholder inside the actually-empty column, instead
-               of showing it in the neighboring column by mistake. */
-            return { el: otherLast, after: true, col: colIndexOf(col), directCol: col };
-          }
+        return { el: null, after: true, col: colIdx, directCol: colEl };
+      }
+
+      for (var j = 0; j < cardsInCol.length; j++){
+        var cr = cardsInCol[j].getBoundingClientRect();
+        if (clientY < cr.top + cr.height / 2){
+          return { el: cardsInCol[j], after: false, col: colIdx };
         }
       }
-      return null;
+      return { el: cardsInCol[cardsInCol.length - 1], after: true, col: colIdx };
     }
 
     function placePlaceholder(target, after){
@@ -1550,14 +1574,12 @@
       card.style.transform = "translate(" + dx + "px," + dy + "px) scale(1.045)";
       var target = findTargetCard(ev.clientX, ev.clientY);
       if (target){
-        var rect = target.el.getBoundingClientRect();
-        var after = ("after" in target) ? target.after : (ev.clientY - rect.top) > (rect.height / 2);
         if (target.directCol){
           placePlaceholderInColumn(target.directCol);
-        } else {
-          placePlaceholder(target.el, after);
+        } else if (target.el){
+          placePlaceholder(target.el, target.after);
         }
-        dropInfo = { targetId: target.el.getAttribute("data-catid"), after: after, col: target.col };
+        dropInfo = { targetId: target.el ? target.el.getAttribute("data-catid") : null, after: target.after, col: target.col };
       } else {
         removePlaceholder();
         dropInfo = null;
