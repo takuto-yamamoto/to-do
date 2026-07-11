@@ -123,8 +123,9 @@
     margin: -2px 20px 10px 20px;
   }
 
-  /* ---------- Main grid (masonry: 2 independent columns, shortest gets next card;
-     "wide" cards break out and take the full width of both columns) ---------- */
+  /* ---------- Main grid (2 independent columns; each card keeps whatever
+     side the user dropped it on, top-packed within its column; "wide"
+     cards break out and take the full width of both columns) ---------- */
   .grid{
     display:flex;
     flex-direction:column;
@@ -749,14 +750,18 @@
     app.innerHTML = html;
     document.getElementById("menuBtn").onclick = openDrawer;
 
-    /* Masonry placement: within a run of normal-width cards, each card
-       goes into whichever column is currently shorter, so short/tall
-       cards pack tightly without leaving a big gap under a short
-       neighbor. A "wide" card (cat.wide) breaks out of the two-column
-       run entirely and takes the full width on its own row; the two
-       columns then start fresh again after it. */
+    /* Two-column placement: within a run of normal-width cards, each card
+       stays in whichever column (cat.col: 0=left, 1=right) the user last
+       dropped it into, so left/right counts can differ freely. Cards with
+       no side chosen yet (new/legacy) get a sensible default. A "wide"
+       card (cat.wide) breaks out of the two-column run entirely and takes
+       the full width on its own row; the two columns then start fresh
+       again after it. */
     var grid = document.getElementById("grid");
-    var colL = null, colR = null, heightL = 0, heightR = 0;
+    var colL = null, colR = null, runLeftCount = 0, runRightCount = 0;
+    var colAssigned = false; /* true if we had to auto-assign a .col to any
+      legacy/new card during this render; triggers a single saveState() so
+      that placement stays put on the next render instead of drifting. */
 
     function startNewColumnRow(){
       var row = document.createElement("div");
@@ -766,7 +771,7 @@
       row.appendChild(colL);
       row.appendChild(colR);
       grid.appendChild(row);
-      heightL = 0; heightR = 0;
+      runLeftCount = 0; runRightCount = 0;
     }
 
     function placeCard(cat){
@@ -795,14 +800,21 @@
         return;
       }
       if (!colL) startNewColumnRow();
-      if (heightL <= heightR){
-        colL.appendChild(cardEl);
-      } else {
-        colR.appendChild(cardEl);
+      var col = cat.col;
+      if (col !== 0 && col !== 1){
+        /* Legacy/new card with no explicit side yet: give it a sensible
+           default (whichever side has fewer cards so far in this run),
+           then remember that choice so it stays there from now on
+           instead of being recomputed every render. */
+        col = (runLeftCount <= runRightCount) ? 0 : 1;
+        cat.col = col;
+        colAssigned = true;
       }
-      var h = cardEl.offsetHeight;
-      if (cardEl.parentElement === colL) heightL += h; else heightR += h;
+      if (col === 0){ colL.appendChild(cardEl); runLeftCount++; }
+      else { colR.appendChild(cardEl); runRightCount++; }
     });
+
+    if (colAssigned) saveState();
 
     pinnedCats.forEach(function(cat){
       var cardEl = placeCard(cat);
@@ -1373,7 +1385,7 @@
 
   /* Moves fromId next to toId. insertAfter=false puts it just above
      (before) toId; insertAfter=true puts it just below (after) toId. */
-  function reorderCategories(fromId, toId, insertAfter){
+  function reorderCategories(fromId, toId, insertAfter, col){
     var cats = state.categories.slice().sort(function(a,b){ return a.order - b.order; });
     var fromIdx = cats.findIndex(function(c){ return c.id === fromId; });
     if (fromIdx < 0) return;
@@ -1385,6 +1397,11 @@
       cats.splice(insertAfter ? toIdx+1 : toIdx, 0, moved);
     }
     cats.forEach(function(c,i){ c.order = i; });
+    /* Which column (left/right) the card was actually dropped into is
+       tracked separately from ordering, so the two counts no longer
+       need to match: dropping always honors the exact side the user
+       let go on, instead of being re-balanced by height afterward. */
+    if ((col === 0 || col === 1) && !moved.wide) moved.col = col;
     saveState();
     renderMain(true);
   }
@@ -1400,7 +1417,7 @@
                                and let the browser's native touch-action:pan-y scrolling handle it
                                (no manual scrollBy/momentum — nothing beats native for smoothness) */
     var placeholder = null;
-    var lastTargetId = null, lastAfter = null;
+    var lastTargetId = null, lastAfter = null, lastDirectCol = null;
 
     function enterMoveMode(){
       /* The hold timer fires purely on elapsed time, so a slow, deliberate
@@ -1435,28 +1452,59 @@
 
     var holdTimer = setTimeout(enterMoveMode, 260);
 
+    /* Which side (0 = left, 1 = right) a .grid-col belongs to within its row. */
+    function colIndexOf(el){
+      var colEl = el && el.closest ? el.closest(".grid-col") : null;
+      if (!colEl) return null;
+      var row = colEl.closest(".grid-row");
+      if (!row) return null;
+      var cols = row.querySelectorAll(".grid-col");
+      return cols[0] === colEl ? 0 : 1;
+    }
+
     function findTargetCard(clientX, clientY){
       card.style.pointerEvents = "none";
       var el = document.elementFromPoint(clientX, clientY);
       card.style.pointerEvents = "";
       if (!el || !el.closest) return null;
       var targetCard = el.closest(".card");
-      if (targetCard && targetCard !== card) return targetCard;
+      if (targetCard && targetCard !== card){
+        return { el: targetCard, col: colIndexOf(targetCard) };
+      }
       /* Also allow dropping in the empty space below the last card of
-         a column (e.g. a short right column next to a tall left one). */
+         a column (e.g. a short right column next to a tall left one),
+         and dropping into a column that has no cards in it at all —
+         left/right no longer need to hold equal counts, so a column
+         can be completely empty and still be a valid drop target. */
       var col = el.closest(".grid-col");
       if (col){
         var cards = col.querySelectorAll(".card");
         var last = cards[cards.length - 1];
-        if (last && last !== card) return last;
+        if (last && last !== card){
+          return { el: last, after: true, col: colIndexOf(col) };
+        }
+        var row = col.closest(".grid-row");
+        if (row){
+          var otherCol = Array.prototype.filter.call(row.querySelectorAll(".grid-col"), function(c){ return c !== col; })[0];
+          var otherLast = otherCol ? otherCol.querySelector(".card:last-child") : null;
+          if (otherLast && otherLast !== card){
+            /* Anchor to the neighboring column's last card (for ordering
+               purposes only) but force it onto the empty side the user
+               is actually hovering over. directCol is used below to draw
+               the placeholder inside the actually-empty column, instead
+               of showing it in the neighboring column by mistake. */
+            return { el: otherLast, after: true, col: colIndexOf(col), directCol: col };
+          }
+        }
       }
       return null;
     }
 
     function placePlaceholder(target, after){
-      if (lastTargetId === target.getAttribute("data-catid") && lastAfter === after) return;
+      if (lastTargetId === target.getAttribute("data-catid") && lastAfter === after && !lastDirectCol) return;
       lastTargetId = target.getAttribute("data-catid");
       lastAfter = after;
+      lastDirectCol = null;
       var parent = target.parentElement;
       if (after){
         parent.insertBefore(placeholder, target.nextSibling);
@@ -1467,9 +1515,18 @@
       requestAnimationFrame(function(){ placeholder.classList.add("show"); });
     }
 
+    function placePlaceholderInColumn(colEl){
+      if (lastDirectCol === colEl) return;
+      lastTargetId = null; lastAfter = null;
+      lastDirectCol = colEl;
+      colEl.appendChild(placeholder);
+      placeholder.classList.remove("show");
+      requestAnimationFrame(function(){ placeholder.classList.add("show"); });
+    }
+
     function removePlaceholder(){
       if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
-      lastTargetId = null; lastAfter = null;
+      lastTargetId = null; lastAfter = null; lastDirectCol = null;
     }
 
     var dropInfo = null; /* { targetId, after } — where the card will be inserted */
@@ -1493,10 +1550,14 @@
       card.style.transform = "translate(" + dx + "px," + dy + "px) scale(1.045)";
       var target = findTargetCard(ev.clientX, ev.clientY);
       if (target){
-        var rect = target.getBoundingClientRect();
-        var after = (ev.clientY - rect.top) > (rect.height / 2);
-        placePlaceholder(target, after);
-        dropInfo = { targetId: target.getAttribute("data-catid"), after: after };
+        var rect = target.el.getBoundingClientRect();
+        var after = ("after" in target) ? target.after : (ev.clientY - rect.top) > (rect.height / 2);
+        if (target.directCol){
+          placePlaceholderInColumn(target.directCol);
+        } else {
+          placePlaceholder(target.el, after);
+        }
+        dropInfo = { targetId: target.el.getAttribute("data-catid"), after: after, col: target.col };
       } else {
         removePlaceholder();
         dropInfo = null;
@@ -1515,7 +1576,7 @@
       card.style.transform = "";
       setTimeout(function(){ card.style.transition = ""; }, 160);
       if (dropInfo && dropInfo.targetId !== catId){
-        reorderCategories(catId, dropInfo.targetId, dropInfo.after);
+        reorderCategories(catId, dropInfo.targetId, dropInfo.after, dropInfo.col);
       }
     }
 
@@ -1645,6 +1706,25 @@
     });
   })();
 
+  /* Ask the browser to treat this site's storage as persistent, so data
+     isn't silently evicted under storage pressure (e.g. on iOS/Android
+     home-screen web apps or long periods of disuse). This is a request,
+     not a guarantee — the browser may still say no depending on its own
+     heuristics (site engagement, installed-as-app status, etc.), and
+     older browsers may not support the API at all, so every step here
+     is defensive and never blocks app startup. */
+  function requestPersistentStorage(){
+    try {
+      if (navigator.storage && typeof navigator.storage.persist === "function"){
+        navigator.storage.persist().then(function(granted){
+          /* No UI needed either way — this is a best-effort background
+             request. Left here (rather than removed) in case it's ever
+             useful to surface to the user or log during debugging. */
+        }).catch(function(){});
+      }
+    } catch(e){}
+  }
+
   loadState(function(loaded){
     state = loaded;
     var changed = cleanupOldCompleted();
@@ -1652,6 +1732,7 @@
     renderMain();
     setupFabDrag();
     setupOutsideTapCancel();
+    requestPersistentStorage();
   });
 
   /* Tapping anywhere outside a card that has its add-task form open cancels that form. */
