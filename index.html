@@ -1452,19 +1452,14 @@
     var lastTargetId = null, lastAfter = null, lastDirectCol = null;
 
     function enterMoveMode(){
-      /* The hold timer fires purely on elapsed time, so a slow, deliberate
-         scroll swipe (real finger movement, just under the 14px snap
-         threshold below) could otherwise still be sitting here 260ms in
-         and get hijacked into card-reorder mode. Re-check actual movement
-         at fire time: any real movement means this is a scroll, not a
-         long-press, no matter how slowly it started. Crucially, at this
-         point native scrolling has NOT started yet (the finger has been
-         essentially still), so switching this card to touch-action:none
-         now reliably suppresses it for the drag that's about to begin. */
-      if (Math.hypot(curX - startX, curY - startY) > 14){
-        abandoned = true;
-        return;
-      }
+      /* Once the hold timer fires, we commit to move mode unconditionally.
+         The only thing that can still call this a scroll instead of a
+         long-press is the real-time check in onMove (a fast/decisive
+         swipe past the threshold), which cancels the timer outright
+         before it ever gets here. So by the time we're here, there's no
+         further "was this actually a scroll?" second-guessing — no
+         movement re-check, and after this point scroll judgement is
+         switched off entirely for this touch. */
       longPress = true;
       card.style.touchAction = "none";
       var cardHeight = card.getBoundingClientRect().height;
