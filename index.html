@@ -1383,25 +1383,57 @@
     }
   }
 
-  /* Moves fromId next to toId. insertAfter=false puts it just above
-     (before) toId; insertAfter=true puts it just below (after) toId. */
-  function reorderCategories(fromId, toId, insertAfter, col){
-    var cats = state.categories.slice().sort(function(a,b){ return a.order - b.order; });
-    var fromIdx = cats.findIndex(function(c){ return c.id === fromId; });
-    if (fromIdx < 0) return;
-    var moved = cats.splice(fromIdx,1)[0];
-    var toIdx = cats.findIndex(function(c){ return c.id === toId; });
-    if (toIdx < 0){
-      cats.push(moved);
-    } else {
-      cats.splice(insertAfter ? toIdx+1 : toIdx, 0, moved);
-    }
-    cats.forEach(function(c,i){ c.order = i; });
-    /* Which column (left/right) the card was actually dropped into is
-       tracked separately from ordering, so the two counts no longer
-       need to match: dropping always honors the exact side the user
-       let go on, instead of being re-balanced by height afterward. */
-    if ((col === 0 || col === 1) && !moved.wide) moved.col = col;
+  /* Reads the FINAL on-screen arrangement directly out of the grid DOM
+     (which, thanks to the placeholder, already shows exactly where the
+     dragged card visually landed) and returns an ordered list describing
+     it. This replaces the old approach of re-locating the drop spot by
+     category id after the fact, which had a dangerous fallback: if the
+     target id couldn't be found (e.g. dropping into an empty column),
+     it silently dumped the card at the very end of the ENTIRE list —
+     nowhere near where the placeholder was actually shown. Reading the
+     DOM directly means "what you see is what you get", always. */
+  function deriveOrderFromDOM(draggedCatId, draggedEl, placeholderEl){
+    var grid = document.getElementById("grid");
+    var result = [];
+    if (!grid) return result;
+    Array.prototype.forEach.call(grid.children, function(block){
+      if (block.classList.contains("grid-wide")){
+        Array.prototype.forEach.call(block.children, function(child){
+          if (child === placeholderEl){
+            result.push({ id: draggedCatId, col: null });
+          } else if (child.classList && child.classList.contains("card") && child !== draggedEl){
+            result.push({ id: child.getAttribute("data-catid"), col: null });
+          }
+        });
+        return;
+      }
+      if (!block.classList.contains("grid-row")) return;
+      var cols = block.querySelectorAll(".grid-col");
+      for (var ci = 0; ci < cols.length; ci++){
+        Array.prototype.forEach.call(cols[ci].children, function(child){
+          if (child === placeholderEl){
+            result.push({ id: draggedCatId, col: ci });
+          } else if (child.classList && child.classList.contains("card") && child !== draggedEl){
+            result.push({ id: child.getAttribute("data-catid"), col: ci });
+          }
+        });
+      }
+    });
+    return result;
+  }
+
+  /* Commits a DOM-derived arrangement: assigns fresh sequential `order`
+     values (and, for non-wide cards, the column they visually landed
+     in) to every category it found, in exactly the sequence read off
+     the screen. */
+  function applyDroppedOrder(list){
+    if (!list.length) return;
+    list.forEach(function(item, i){
+      var cat = state.categories.find(function(c){ return c.id === item.id; });
+      if (!cat) return;
+      cat.order = i;
+      if (!cat.wide && (item.col === 0 || item.col === 1)) cat.col = item.col;
+    });
     saveState();
     renderMain(true);
   }
@@ -1421,7 +1453,7 @@
 
     function enterMoveMode(){
       /* The hold timer fires purely on elapsed time, so a slow, deliberate
-         scroll swipe (real finger movement, just under the 10px snap
+         scroll swipe (real finger movement, just under the 14px snap
          threshold below) could otherwise still be sitting here 260ms in
          and get hijacked into card-reorder mode. Re-check actual movement
          at fire time: any real movement means this is a scroll, not a
@@ -1429,7 +1461,7 @@
          point native scrolling has NOT started yet (the finger has been
          essentially still), so switching this card to touch-action:none
          now reliably suppresses it for the drag that's about to begin. */
-      if (Math.hypot(curX - startX, curY - startY) > 6){
+      if (Math.hypot(curX - startX, curY - startY) > 14){
         abandoned = true;
         return;
       }
@@ -1553,8 +1585,6 @@
       lastTargetId = null; lastAfter = null; lastDirectCol = null;
     }
 
-    var dropInfo = null; /* { targetId, after } — where the card will be inserted */
-
     function onMove(ev){
       if (ev.pointerId !== pointerId) return;
       curX = ev.clientX; curY = ev.clientY;
@@ -1563,7 +1593,7 @@
       if (abandoned) return; /* let the browser's native scroll run, untouched */
 
       if (!longPress){
-        if (Math.hypot(dx, dy) > 10){
+        if (Math.hypot(dx, dy) > 14){
           clearTimeout(holdTimer);
           abandoned = true;
         }
@@ -1579,10 +1609,8 @@
         } else if (target.el){
           placePlaceholder(target.el, target.after);
         }
-        dropInfo = { targetId: target.el ? target.el.getAttribute("data-catid") : null, after: target.after, col: target.col };
       } else {
         removePlaceholder();
-        dropInfo = null;
       }
     }
 
@@ -1592,14 +1620,18 @@
       cleanup();
       if (!longPress) return;
       card.style.touchAction = "";
-      removePlaceholder();
       card.classList.remove("dragging");
       card.style.transition = "transform 150ms ease";
       card.style.transform = "";
       setTimeout(function(){ card.style.transition = ""; }, 160);
-      if (dropInfo && dropInfo.targetId !== catId){
-        reorderCategories(catId, dropInfo.targetId, dropInfo.after, dropInfo.col);
-      }
+
+      /* Commit straight from what's on screen: the placeholder (if any)
+         marks exactly where the card was let go, so read the grid DOM
+         as-is before tearing the placeholder down. */
+      var wasPlaced = placeholder && placeholder.parentNode;
+      var newOrder = wasPlaced ? deriveOrderFromDOM(catId, card, placeholder) : null;
+      removePlaceholder();
+      if (newOrder) applyDroppedOrder(newOrder);
     }
 
     function cleanup(){
